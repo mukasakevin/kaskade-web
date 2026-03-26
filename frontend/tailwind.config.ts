@@ -13,10 +13,16 @@ const config: Config = {
         sans: ["var(--font-sans)", "sans-serif"],
         // Cela connecte la variable --font-mono
         mono: ["var(--font-mono)", "monospace"],
+        // Nouvelle police Serif pour le luxe
+        serif: ["var(--font-serif)", "serif"],
       },
       colors: {
         primary: "#FF6B00", // Ton orange
         dark: "#1A1D21",    // Ton noir
+        // Palette Luxe
+        chocolat: "#1C0D08",
+        ocre: "#C68642",
+        "off-white": "#FDFCFB",
       }
     },
   },

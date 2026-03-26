@@ -1,37 +1,26 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
 
 @Injectable()
-export class RedisService implements OnModuleInit, OnModuleDestroy {
-  private redisClient: Redis;
+export class RedisService {
+  private mockStore = new Map<string, string>();
 
   constructor(private configService: ConfigService) {}
 
-  onModuleInit() {
-    this.redisClient = new Redis({
-      host: this.configService.get<string>('REDIS_HOST', 'localhost'),
-      port: this.configService.get<number>('REDIS_PORT', 6379),
-    });
-  }
-
-  onModuleDestroy() {
-    this.redisClient.disconnect();
-  }
-
   async set(key: string, value: string, ttlSeconds?: number) {
+    this.mockStore.set(key, value);
     if (ttlSeconds) {
-      await this.redisClient.set(key, value, 'EX', ttlSeconds);
-    } else {
-      await this.redisClient.set(key, value);
+      setTimeout(() => {
+        this.mockStore.delete(key);
+      }, ttlSeconds * 1000);
     }
   }
 
   async get(key: string): Promise<string | null> {
-    return await this.redisClient.get(key);
+    return this.mockStore.get(key) || null;
   }
 
   async del(key: string) {
-    await this.redisClient.del(key);
+    this.mockStore.delete(key);
   }
 }

@@ -11,8 +11,8 @@ export default function Hero() {
                 <div className="relative w-full h-full" style={{ maskImage: "linear-gradient(to left, black 50%, transparent 100%)", WebkitMaskImage: "linear-gradient(to left, black 50%, transparent 100%)" }}>
                     <img
                         className="w-full h-full object-cover object-[center_top]"
-                        alt="Artisan ébéniste"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIcdgq7jqoMz0FMpK840MmixMGvfdXDgauOd7kxJOgvXkm_dxg3hWNOZCsa5YjJQg49N4IAknL7cjzeIDTjRrkpW3XWeBC3Z-jabqwyGJg4znfRDvj_fs8QC2Fu0siNbae3v6Bb-XBCi8V_pNysrim5-IGm6p-qrb915uQ5EV_F4KYqO2S6vGq80myAdAZM3TvQwnLqiI1phwfHPBIW1g9AymytKCyv91o9AlqFVjcF6f5CXotli_LQXaZTWGcpsIoZIzoIkOWnbk"
+                        alt="Coiffeur professionnel"
+                        src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop"
                     />
                 </div>
             </div>
@@ -49,7 +49,14 @@ export default function Hero() {
                             <Search className="text-slate-400 mr-3 w-5 h-5" />
                             <input className="w-full bg-transparent border-none focus:ring-0 text-[#0F172A] placeholder:text-slate-400 font-medium py-4 text-lg" placeholder="De quel service avez-vous besoin ?" type="text" />
                         </div>
-                        <button className="bg-[#1A73E8] text-white px-10 py-4 rounded-full font-bold text-lg active:scale-0.95 shadow-lg shadow-[#1A73E8]/20 hover:bg-blue-700 transition-all">
+                        <button 
+                            onClick={() => {
+                                import("sonner").then(({ toast }) => {
+                                    toast.success("Recherche lancée avec succès ! (Test)");
+                                });
+                            }}
+                            className="bg-[#1A73E8] text-white px-10 py-4 rounded-full font-bold text-lg active:scale-0.95 shadow-lg shadow-[#1A73E8]/20 hover:bg-blue-700 transition-all"
+                        >
                             Rechercher
                         </button>
                     </motion.div>

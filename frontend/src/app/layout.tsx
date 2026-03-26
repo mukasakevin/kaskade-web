@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google"; // Mise à jour vers Inter
+import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google"; // Mise à jour vers Inter
+import { Toaster } from "sonner";
 import "./globals.css";
 
 // 1. Configuration des polices
@@ -7,6 +8,12 @@ import "./globals.css";
 const sans = Inter({ 
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const serif = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -68,7 +75,7 @@ export default function RootLayout({
     <html lang="fr" className="scroll-smooth">
       <body
         className={`
-          ${sans.variable} ${mono.variable} 
+          ${sans.variable} ${mono.variable} ${serif.variable}
           bg-[#FFFFFF] text-[#1A1D21] 
           antialiased overflow-x-hidden selection:bg-[#f97415] selection:text-[#FFFFFF] font-sans
         `}
@@ -77,7 +84,8 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
            {children}
         </div>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
-}
+}
