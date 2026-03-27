@@ -17,7 +17,7 @@ export default function CategoryBento() {
         desc: "Services de prestige pour résidences d'exception.",
         image: "https://images.unsplash.com/photo-1600585154340-be6048805f77?q=80&w=2070&auto=format&fit=crop",
         colSpan: "lg:col-span-2 lg:row-span-1",
-        type: "Artisanat d'Élite"
+        type: "Artisanat d'Exception"
     },
     {
         title: "BIEN-ÊTRE.",

@@ -21,7 +21,7 @@ export default function Footer() {
             <h5 className="font-serif font-black mb-10 text-[10px] uppercase tracking-[0.4em] text-ocre opacity-80">Réseau.</h5>
             <ul className="space-y-5 text-off-white/50 font-sans uppercase text-[10px] tracking-widest font-bold">
               <li><a className="hover:text-ocre transition-all" href="#">Devenir Expert</a></li>
-              <li><a className="hover:text-ocre transition-all" href="#">Services Élite</a></li>
+              <li><a className="hover:text-ocre transition-all" href="#">Nos Services</a></li>
               <li><a className="hover:text-ocre transition-all" href="#">Marketplace</a></li>
             </ul>
           </div>

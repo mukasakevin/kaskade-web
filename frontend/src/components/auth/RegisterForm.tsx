@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useAuthGuard } from '@/lib/use-auth-guard';
+import { User, Hammer } from 'lucide-react';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -18,7 +19,10 @@ const registerSchema = z.object({
   password: z.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Au moins une majuscule, une minuscule et un chiffre requis'),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  role: z.enum(['CLIENT', 'PROVIDER'], {
+    required_error: "Veuillez choisir votre profil",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
@@ -34,10 +38,17 @@ export default function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'CLIENT',
+    }
   });
+
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterValues) => {
     setIsLoading(true);
@@ -47,6 +58,7 @@ export default function RegisterForm() {
         email: data.email,
         phone: data.phone,
         password: data.password,
+        role: data.role,
       };
       
       const response = await api.post('/auth/register', payload);
@@ -92,6 +104,53 @@ export default function RegisterForm() {
         </header>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          
+          {/* SÉLECTEUR DE RÔLE : Style Premium Architectural */}
+          <div className="space-y-3 mb-8">
+            <label className="block font-sans text-[9px] uppercase tracking-[0.2em] text-chocolat/60 font-bold">
+              Nature du Profil
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setValue('role', 'CLIENT')}
+                className={`flex flex-col items-center gap-3 p-6 rounded-xl border transition-all duration-500 group ${
+                  selectedRole === 'CLIENT' 
+                  ? 'bg-chocolat border-chocolat shadow-xl shadow-chocolat/20' 
+                  : 'bg-white border-ocre/10 hover:border-ocre/30'
+                }`}
+              >
+                <div className={`p-3 rounded-full transition-colors ${selectedRole === 'CLIENT' ? 'bg-ocre/20 text-ocre' : 'bg-ocre/5 text-ocre/40 group-hover:text-ocre'}`}>
+                  <User className="w-5 h-5" />
+                </div>
+                <div className="text-center">
+                  <p className={`text-[10px] font-black uppercase tracking-widest ${selectedRole === 'CLIENT' ? 'text-white' : 'text-chocolat'}`}>Client</p>
+                  <p className={`text-[8px] font-medium leading-tight mt-1 ${selectedRole === 'CLIENT' ? 'text-white/60' : 'text-chocolat/40'}`}>Je cherche un expert</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue('role', 'PROVIDER')}
+                className={`flex flex-col items-center gap-3 p-6 rounded-xl border transition-all duration-500 group ${
+                  selectedRole === 'PROVIDER' 
+                  ? 'bg-chocolat border-chocolat shadow-xl shadow-chocolat/20' 
+                  : 'bg-white border-ocre/10 hover:border-ocre/30'
+                }`}
+              >
+                <div className={`p-3 rounded-full transition-colors ${selectedRole === 'PROVIDER' ? 'bg-ocre/20 text-ocre' : 'bg-ocre/5 text-ocre/40 group-hover:text-ocre'}`}>
+                  <Hammer className="w-5 h-5" />
+                </div>
+                <div className="text-center">
+                  <p className={`text-[10px] font-black uppercase tracking-widest ${selectedRole === 'PROVIDER' ? 'text-white' : 'text-chocolat'}`}>Prestataire</p>
+                  <p className={`text-[8px] font-medium leading-tight mt-1 ${selectedRole === 'PROVIDER' ? 'text-white/60' : 'text-chocolat/40'}`}>Je propose mes services</p>
+                </div>
+              </button>
+            </div>
+            {errors.role && (
+              <p className="mt-1 text-[8px] text-red-500 uppercase tracking-widest font-bold">{errors.role.message}</p>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Nom complet */}

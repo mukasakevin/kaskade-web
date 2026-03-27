@@ -13,10 +13,11 @@ export class MailService {
     });
   }
 
-  async sendVerificationEmail(email: string, fullName: string, otp: string) {
+  async sendVerificationEmail(email: string, fullName: string, otp: string, role: string) {
+    const roleName = role === 'PROVIDER' ? 'Prestataire' : (role === 'ADMIN' ? 'Administrateur' : 'Client');
     try {
       const result = await this.client.transactionalEmails.sendTransacEmail({
-        subject: 'Vérification de votre compte - Kaskade',
+        subject: `Bienvenue chez Kaskade - Inscription ${roleName}`,
         to: [{ email: email, name: fullName }],
         sender: {
           email: this.configService.get<string>('MAIL_FROM_EMAIL'),
@@ -26,9 +27,10 @@ export class MailService {
           <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
               <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                <h1 style="color: #007bff; text-align: center;">Bienvenue chez Kaskade !</h1>
+                <h1 style="color: #D4AF37; text-align: center;">Bienvenue chez Kaskade !</h1>
                 <p>Bonjour <strong>${fullName}</strong>,</p>
-                <p>Merci de vous être inscrit. Pour activer votre compte, veuillez utiliser le code de vérification suivant :</p>
+                <p>Merci de vous être inscrit en tant que <strong>${roleName}</strong> sur notre plateforme.</p>
+                <p>Pour activer votre compte, veuillez utiliser le code de vérification suivant :</p>
                 <div style="text-align: center; margin: 30px 0;">
                   <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; background: #f8f9fa; padding: 15px 30px; border-radius: 5px; border: 1px dashed #007bff; color: #007bff;">
                     ${otp}

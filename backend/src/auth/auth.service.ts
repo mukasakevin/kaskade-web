@@ -39,7 +39,7 @@ export class AuthService {
     
     // Envoi de l'e-mail via Brevo
     try {
-      await this.mailService.sendVerificationEmail(user.email, user.fullName, otp);
+      await this.mailService.sendVerificationEmail(user.email, user.fullName, otp, user.role);
     } catch (error) {
       this.logger.error(`Échec de l'envoi de l'e-mail à ${user.email}`, error);
       // On continue quand même, l'utilisateur pourra demander un renvoi d'OTP plus tard
@@ -124,7 +124,7 @@ export class AuthService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await this.redisService.set(`otp:${email}`, otp, 600);
 
-    await this.mailService.sendVerificationEmail(email, user.fullName, otp);
+    await this.mailService.sendVerificationEmail(email, user.fullName, otp, user.role);
 
     return { message: 'Un nouveau code de vérification a été envoyé à votre adresse e-mail.' };
   }

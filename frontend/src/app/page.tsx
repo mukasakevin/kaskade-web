@@ -7,6 +7,7 @@ import Hero from "../components/landing/Hero";
 import Features from "../components/landing/Features";
 import CategoryBento from "../components/landing/CategoryBento";
 import Process from "../components/landing/Process";
+import ServiceExplorer from "../components/landing/ServiceExplorer";
 import Footer from "../components/landing/Footer";
 import { MessageCircle, Phone } from "lucide-react";
 
@@ -32,6 +33,8 @@ export default function Home() {
 
             <Features />
 
+            <ServiceExplorer />
+
             <CategoryBento />
 
             <Process />
@@ -53,7 +56,7 @@ export default function Home() {
                     </button>
                     <button className="flex items-center justify-center gap-4 bg-transparent border border-ocre/30 text-ocre px-12 py-6 rounded-md font-bold hover:bg-ocre/10 transition-all uppercase tracking-[0.2em] text-[11px] w-full md:w-auto group">
                       <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                      CONTACT ÉLITE
+                      NOUS CONTACTER
                     </button>
                   </div>
                 </div>

@@ -77,15 +77,15 @@ export default function VerifyOtpForm() {
       <motion.h2 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-[#e5e2e1] font-black text-6xl md:text-7xl lg:text-8xl tracking-tighter mb-10"
+        className="text-chocolat font-black text-6xl md:text-7xl lg:text-8xl tracking-tighter mb-10"
       >
         Verify.
       </motion.h2>
 
       <div className="space-y-4 mb-16">
-        <p className="text-[#e0c0b1] font-medium uppercase tracking-[0.2em] text-[10px]">Protocol de Sécurité</p>
-        <p className="text-[#e5e2e1] text-lg leading-relaxed opacity-80">
-          Nous avons envoyé un code à {email || 'votre email'}. <br/>Entrez les identifiants pour continuer.
+        <p className="text-ocre font-medium uppercase tracking-[0.2em] text-[10px]">Protocol de Sécurité</p>
+        <p className="text-chocolat/80 text-lg leading-relaxed">
+          Nous avons envoyé un code à <span className="font-bold text-chocolat">{email || 'votre email'}</span>. <br/>Entrez les identifiants pour continuer.
         </p>
       </div>
 
@@ -100,7 +100,7 @@ export default function VerifyOtpForm() {
               value={data}
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
-              className="w-full h-16 md:h-20 text-center text-3xl font-light bg-[#353534] rounded-xl border-none text-[#ffb68f] focus:ring-2 focus:ring-[#f97415]/30 focus:bg-[#393939] transition-all outline-none"
+              className="w-full h-16 md:h-20 text-center text-3xl font-light bg-white rounded-xl border border-chocolat/10 text-chocolat focus:ring-2 focus:ring-ocre/30 focus:border-ocre/50 transition-all outline-none"
               placeholder="·"
             />
           ))}
@@ -110,7 +110,7 @@ export default function VerifyOtpForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-5 px-8 rounded-xl bg-gradient-to-br from-[#f97415] to-[#713612] text-[#331100] font-bold text-sm uppercase tracking-widest hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full py-5 px-8 rounded-xl bg-ocre text-chocolat font-bold text-sm uppercase tracking-widest hover:bg-chocolat hover:text-ocre transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {isLoading ? 'Vérification...' : 'Vérifier'}
           </button>
@@ -119,13 +119,13 @@ export default function VerifyOtpForm() {
             <button
               onClick={handleResend}
               type="button"
-              className="text-[#e0c0b1] hover:text-[#ffb68f] transition-colors text-[10px] uppercase tracking-[0.15em] font-bold group"
+              className="text-chocolat/60 hover:text-ocre transition-colors text-[10px] uppercase tracking-[0.15em] font-bold group"
             >
               Renvoyer le code <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
             </button>
             <Link
               href="/login"
-              className="text-[#e0c0b1]/40 hover:text-[#e0c0b1] transition-colors text-[10px] uppercase tracking-[0.15em] font-bold"
+              className="text-chocolat/30 hover:text-chocolat transition-colors text-[10px] uppercase tracking-[0.15em] font-bold"
             >
               Retour connexion
             </Link>
