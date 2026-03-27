@@ -77,30 +77,33 @@ export default function VerifyOtpForm() {
       <motion.h2 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-chocolat font-black text-6xl md:text-7xl lg:text-8xl tracking-tighter mb-10"
+        className="text-chocolat font-black text-5xl md:text-7xl lg:text-8xl tracking-tighter mb-6 md:mb-10"
       >
         Verify.
       </motion.h2>
 
-      <div className="space-y-4 mb-16">
-        <p className="text-ocre font-medium uppercase tracking-[0.2em] text-[10px]">Protocol de Sécurité</p>
-        <p className="text-chocolat/80 text-lg leading-relaxed">
+      <div className="space-y-2 md:space-y-4 mb-8 md:mb-16">
+        <p className="text-ocre font-medium uppercase tracking-[0.2em] text-[8px] md:text-[10px]">Protocol de Sécurité</p>
+        <p className="text-chocolat/80 text-sm md:text-lg leading-relaxed">
           Nous avons envoyé un code à <span className="font-bold text-chocolat">{email || 'votre email'}</span>. <br/>Entrez les identifiants pour continuer.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-12">
-        <div className="flex gap-3 md:gap-4 justify-between">
+      <form onSubmit={handleSubmit} className="space-y-8 md:space-y-12">
+        <div className="flex gap-2 md:gap-4 justify-between">
           {otp.map((data, index) => (
             <input
               key={index}
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               maxLength={1}
+              autoFocus={index === 0}
               ref={(el) => { inputRefs.current[index] = el; }}
               value={data}
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
-              className="w-full h-16 md:h-20 text-center text-3xl font-light bg-white rounded-xl border border-chocolat/10 text-chocolat focus:ring-2 focus:ring-ocre/30 focus:border-ocre/50 transition-all outline-none"
+              className="w-full h-12 md:h-20 text-center text-xl md:text-3xl font-light bg-white rounded-lg md:rounded-xl border border-chocolat/10 text-chocolat focus:ring-2 focus:ring-ocre/30 focus:border-ocre/50 transition-all outline-none"
               placeholder="·"
             />
           ))}

@@ -110,41 +110,31 @@ export default function RegisterForm() {
             <label className="block font-sans text-[9px] uppercase tracking-[0.2em] text-chocolat/60 font-bold">
               Nature du Profil
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex bg-white border border-ocre/10 p-1 rounded-full w-fit mx-auto md:mx-0">
               <button
                 type="button"
                 onClick={() => setValue('role', 'CLIENT')}
-                className={`flex flex-col items-center gap-3 p-6 rounded-xl border transition-all duration-500 group ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 ${
                   selectedRole === 'CLIENT' 
-                  ? 'bg-chocolat border-chocolat shadow-xl shadow-chocolat/20' 
-                  : 'bg-white border-ocre/10 hover:border-ocre/30'
+                  ? 'bg-chocolat text-white shadow-md' 
+                  : 'text-chocolat/60 hover:text-chocolat hover:bg-ocre/5'
                 }`}
               >
-                <div className={`p-3 rounded-full transition-colors ${selectedRole === 'CLIENT' ? 'bg-ocre/20 text-ocre' : 'bg-ocre/5 text-ocre/40 group-hover:text-ocre'}`}>
-                  <User className="w-5 h-5" />
-                </div>
-                <div className="text-center">
-                  <p className={`text-[10px] font-black uppercase tracking-widest ${selectedRole === 'CLIENT' ? 'text-white' : 'text-chocolat'}`}>Client</p>
-                  <p className={`text-[8px] font-medium leading-tight mt-1 ${selectedRole === 'CLIENT' ? 'text-white/60' : 'text-chocolat/40'}`}>Je cherche un expert</p>
-                </div>
+                <User className="w-3.5 h-3.5" />
+                <span className="text-[9px] font-black uppercase tracking-widest">Client</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setValue('role', 'PROVIDER')}
-                className={`flex flex-col items-center gap-3 p-6 rounded-xl border transition-all duration-500 group ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 ${
                   selectedRole === 'PROVIDER' 
-                  ? 'bg-chocolat border-chocolat shadow-xl shadow-chocolat/20' 
-                  : 'bg-white border-ocre/10 hover:border-ocre/30'
+                  ? 'bg-chocolat text-white shadow-md' 
+                  : 'text-chocolat/60 hover:text-chocolat hover:bg-ocre/5'
                 }`}
               >
-                <div className={`p-3 rounded-full transition-colors ${selectedRole === 'PROVIDER' ? 'bg-ocre/20 text-ocre' : 'bg-ocre/5 text-ocre/40 group-hover:text-ocre'}`}>
-                  <Hammer className="w-5 h-5" />
-                </div>
-                <div className="text-center">
-                  <p className={`text-[10px] font-black uppercase tracking-widest ${selectedRole === 'PROVIDER' ? 'text-white' : 'text-chocolat'}`}>Prestataire</p>
-                  <p className={`text-[8px] font-medium leading-tight mt-1 ${selectedRole === 'PROVIDER' ? 'text-white/60' : 'text-chocolat/40'}`}>Je propose mes services</p>
-                </div>
+                <Hammer className="w-3.5 h-3.5" />
+                <span className="text-[9px] font-black uppercase tracking-widest">Prestataire</span>
               </button>
             </div>
             {errors.role && (
