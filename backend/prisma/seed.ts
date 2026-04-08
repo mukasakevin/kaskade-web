@@ -1,8 +1,15 @@
+import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 import { fakerFR as faker } from '@faker-js/faker';
 
-const prisma = new PrismaClient();
+// Récupérez l'URL et créez l'adaptateur
+const connectionString = process.env.DATABASE_URL!;
+const adapter = new PrismaPg({ connectionString });
+
+// Passez l'adaptateur au constructeur (obligatoire en v7)
+const prisma = new PrismaClient({ adapter });
 
 const CATEGORIES = ["ÉLECTRICITÉ", "MÉNAGE", "ARCHITECTURE", "TECH", "BIEN-ÊTRE", "PLOMBERIE"];
 
@@ -30,12 +37,12 @@ async function main() {
       fullName: 'Julian Thorne (Admin)',
       phone: '+243990000000',
       role: Role.ADMIN,
-      city: 'Goma',
+      quartier: 'Goma',
       isVerified: true,
       isActive: true,
     },
   });
-  console.log(` Admin: ${admin.email}`);
+  console.log(`✅ Admin: ${admin.email}`);
 
   // 2. PROVIDER
   const provider = await prisma.user.upsert({
@@ -47,12 +54,12 @@ async function main() {
       fullName: 'Provider (Prestataire)',
       phone: '+243991111111',
       role: Role.PROVIDER,
-      city: 'Goma',
+      quartier: 'Goma',
       isVerified: true,
       isActive: true,
     },
   });
-  console.log(` Provider: ${provider.email}`);
+  console.log(`✅ Provider: ${provider.email}`);
 
   // 3. CLIENT
   const client = await prisma.user.upsert({
@@ -64,38 +71,30 @@ async function main() {
       fullName: 'Client (Client)',
       phone: '+243992222222',
       role: Role.CLIENT,
-      city: 'Goma',
+      quartier: 'Goma',
       isVerified: true,
       isActive: true,
     },
   });
   console.log(`✅ Client: ${client.email}`);
 
-  // 4. SERVICES
-  console.log('📦 Création des services...');
-  
-  // Supprimer les services existants pour faire un seed propre
-  await prisma.service.deleteMany({});
+  console.log('✅ Seed des utilisateurs terminé avec succès!');
 
-  for (let i = 0; i < 12; i++) {
-    const category = faker.helpers.arrayElement(CATEGORIES);
-    const imageId = faker.helpers.arrayElement(CATEGORY_IMAGES[category]);
-    
+  console.log(' Début du seed des services...');
+  
+  // Seed basic services for each category
+  for (const category of CATEGORIES) {
     await prisma.service.create({
       data: {
-        title: faker.person.jobTitle() + " " + faker.company.catchPhraseAdjective(),
-        description: faker.lorem.sentence(12),
-        category: category,
-        price: faker.number.int({ min: 10, max: 150 }),
-        // @ts-ignore
-        image: `https://images.unsplash.com/photo-${imageId}?auto=format&fit=crop&w=800&q=80`,
-        providerId: provider.id,
+        category,
+        name: `Service standard - ${category}`, // placeholder name
+        description: `Description pour les services de type ${category}`,
         isActive: true,
       }
     });
   }
 
-  console.log(' Seed terminé avec succès !');
+  console.log('✅ Seed des services terminé avec succès!');
 }
 
 main()

@@ -64,7 +64,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  async getMe(@CurrentUser('sub') userId: string) {
+  async getMe(@CurrentUser('id') userId: string) {
     return this.authService.getMe(userId);
   }
 
@@ -93,7 +93,7 @@ export class AuthController {
   @Patch('me')
   @HttpCode(HttpStatus.OK)
   async updateMe(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.authService.updateMe(userId, updateUserDto);

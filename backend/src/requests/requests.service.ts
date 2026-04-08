@@ -1,143 +1,161 @@
-import { Injectable, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { RequestStatus, Role } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RequestStatusChangedEvent } from './events/request-status.event';
-
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { RequestStatus } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class RequestsService {
   constructor(
-    private prisma: PrismaService,
-    private eventEmitter: EventEmitter2
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  /**
-   * CRÉATION : Permet à un client de demander un service
-   * La demande est créée au statut PENDING.
-   */
-  async create(createRequestDto: CreateRequestDto, clientId: string) {
-    const { serviceId, message } = createRequestDto;
+  // ─── CLIENT ───────────────────────────────────────────────────────────────
 
-    // 1. Vérifier que le service existe
+  async create(clientId: string, createRequestDto: CreateRequestDto) {
+    // Vérifier que le service existe et est actif
     const service = await this.prisma.service.findUnique({
-      where: { id: serviceId },
-      include: { provider: true }
+      where: { id: createRequestDto.serviceId },
     });
 
-    if (!service) {
-      throw new NotFoundException(`Service #${serviceId} introuvable.`);
+    if (!service || !service.isActive) {
+      throw new BadRequestException('Le service spécifié est introuvable ou inactif.');
     }
 
-    // 2. Création de la demande (Request)
     const request = await this.prisma.request.create({
-      data: {
-        status: RequestStatus.PENDING,
-        message: message,
-        clientId: clientId,
-        serviceId: serviceId,
-        providerId: service.providerId,
-        escrowAmount: service.price, // On pré-remplit le montant du séquestre avec le prix du service
-        expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Expiration par défaut : 48h
-      },
-      include: {
-        client: true,
-        service: true,
-        provider: true
-      }
+      data: { ...createRequestDto, clientId },
+      include: { service: true },
     });
 
-    // Émettre l'événement de création (Optionnel pour notifications)
-    this.eventEmitter.emit(
-      'request.status.changed',
-      new RequestStatusChangedEvent(request.id, null, RequestStatus.PENDING, clientId)
-    );
+    this.eventEmitter.emit('request.created', { requestId: request.id, clientId });
 
     return request;
   }
 
-  /**
-   * MACHINE D'ÉTAT : Gère le passage d'un statut à un autre
-   * avec vérification de rôle et de validité de transition.
-   */
-  async updateStatus(requestId: string, nextStatus: RequestStatus, userId: string, userRole: Role) {
+  // Un client ne voit que ses propres demandes
+  async findMyRequests(clientId: string) {
+    return this.prisma.request.findMany({
+      where: { clientId },
+      include: { service: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Un client voit une demande uniquement si elle lui appartient
+  async findOneForClient(id: string, clientId: string) {
     const request = await this.prisma.request.findUnique({
-      where: { id: requestId },
-      include: { service: true }
+      where: { id },
+      include: { service: true },
     });
 
-    if (!request) {
-      throw new NotFoundException(`Demande #${requestId} introuvable.`);
+    if (!request) throw new NotFoundException('Demande introuvable.');
+    if (request.clientId !== clientId) {
+      throw new ForbiddenException("Vous n'avez pas accès à cette demande.");
     }
 
-    const currentStatus = request.status;
+    return request;
+  }
 
-    // ─────────────────────────────────────────────
-    // RÈGLES DE TRANSITION (State Machine)
-    // ─────────────────────────────────────────────
+  // Un client peut modifier sa demande seulement si elle est PENDING
+  async updateForClient(id: string, clientId: string, updateRequestDto: UpdateRequestDto) {
+    const request = await this.findOneForClient(id, clientId);
 
-    switch (nextStatus) {
-      // 1. PENDING -> APPROVED ou REJECTED (Uniquement par l'ADMIN)
-      case RequestStatus.APPROVED:
-      case RequestStatus.REJECTED:
-        if (userRole !== Role.ADMIN) {
-          throw new ForbiddenException("Seul un administrateur peut valider ou rejeter une demande initiale.");
-        }
-        if (currentStatus !== RequestStatus.PENDING) {
-          throw new BadRequestException(`Impossible de passer à ${nextStatus} depuis le statut ${currentStatus}.`);
-        }
-        break;
-
-      // 2. APPROVED -> SCHEDULED (Uniquement par le PRESTATAIRE)
-      case RequestStatus.SCHEDULED:
-        if (userRole !== Role.PROVIDER) {
-          throw new ForbiddenException("Seul le prestataire peut planifier une intervention.");
-        }
-        if (currentStatus !== RequestStatus.APPROVED) {
-          throw new BadRequestException("Une demande doit être approuvée par l'admin avant d'être planifiée.");
-        }
-        break;
-
-      // 3. SCHEDULED -> CONFIRMED (Uniquement par le CLIENT)
-      case RequestStatus.CONFIRMED:
-        if (userRole !== Role.CLIENT) {
-          throw new ForbiddenException("Seul le client peut confirmer le rendez-vous pour verrouiller le séquestre.");
-        }
-        if (currentStatus !== RequestStatus.SCHEDULED) {
-          throw new BadRequestException("Le prestataire doit d'abord proposer une date (SCHEDULED).");
-        }
-        break;
-
-      // 4. CONFIRMED -> COMPLETED (Uniquement par le CLIENT)
-      case RequestStatus.COMPLETED:
-        if (userRole !== Role.CLIENT) {
-          throw new ForbiddenException("Le client est le seul habilité à valider la fin de prestation pour libérer les fonds.");
-        }
-        if (currentStatus !== RequestStatus.CONFIRMED) {
-          throw new BadRequestException("La prestation doit être confirmée avant d'être marquée comme terminée.");
-        }
-        break;
-
-      default:
-        throw new BadRequestException(`Transition vers ${nextStatus} non gérée ou interdite.`);
+    if (request.status !== RequestStatus.PENDING) {
+      throw new BadRequestException('Seules les demandes en attente peuvent être modifiées.');
     }
 
-    // Mise à jour effective
+    return this.prisma.request.update({
+      where: { id },
+      data: updateRequestDto,
+      include: { service: true },
+    });
+  }
+
+  // Un client peut annuler sa demande seulement si elle est PENDING
+  async removeForClient(id: string, clientId: string) {
+    const request = await this.findOneForClient(id, clientId);
+
+    if (request.status !== RequestStatus.PENDING) {
+      throw new BadRequestException('Seules les demandes en attente peuvent être annulées.');
+    }
+
+    return this.prisma.request.delete({ where: { id } });
+  }
+
+  // ─── ADMIN ────────────────────────────────────────────────────────────────
+
+  // L'admin voit toutes les demandes avec infos client et service
+  async findAll() {
+    return this.prisma.request.findMany({
+      include: {
+        service: true,
+        client: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(id: string) {
+    const request = await this.prisma.request.findUnique({
+      where: { id },
+      include: {
+        service: true,
+        client: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
+      },
+    });
+
+    if (!request) throw new NotFoundException('Demande introuvable.');
+    return request;
+  }
+
+  async approve(id: string) {
+    const request = await this.findOne(id);
+
+    if (request.status !== RequestStatus.PENDING) {
+      throw new BadRequestException('Seules les demandes en attente peuvent être approuvées.');
+    }
+
     const updatedRequest = await this.prisma.request.update({
-      where: { id: requestId },
-      data: { 
-        status: nextStatus,
-        adminId: nextStatus === RequestStatus.APPROVED || nextStatus === RequestStatus.REJECTED ? userId : undefined,
-      }
+      where: { id },
+      data: { status: RequestStatus.APPROVED },
     });
 
-    // Émettre l'événement de changement de statut (Design Pattern Observer)
-    this.eventEmitter.emit(
-      'request.status.changed',
-      new RequestStatusChangedEvent(requestId, currentStatus, nextStatus, userId)
-    );
+    this.eventEmitter.emit('request.approved', { requestId: updatedRequest.id, serviceId: updatedRequest.serviceId });
 
     return updatedRequest;
+  }
+
+  async reject(id: string) {
+    const request = await this.findOne(id);
+
+    if (request.status !== RequestStatus.PENDING) {
+      throw new BadRequestException('Seules les demandes en attente peuvent être rejetées.');
+    }
+
+    return this.prisma.request.update({
+      where: { id },
+      data: { status: RequestStatus.REJECTED },
+    });
+  }
+
+  // ─── MOCK PAYMENT ─────────────────────────────────────────────────────────
+  async mockPaymentDeposit(id: string, clientId: string) {
+    const request = await this.findOneForClient(id, clientId);
+    
+    // Simuler le paiement validé (Acompte 50%)
+    this.eventEmitter.emit('payment.deposit_confirmed', { requestId: request.id });
+    
+    return { message: "Paiement de l'acompte (50%) confirmé avec succès (Mock)." };
   }
 }

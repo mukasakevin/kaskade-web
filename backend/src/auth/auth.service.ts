@@ -15,6 +15,7 @@ import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 import { MailService } from '../mail/mail.service';
 import { RedisService } from '../redis/redis.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     private readonly redisService: RedisService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -64,6 +66,12 @@ export class AuthService {
     
     // Supprimer l'OTP
     await this.redisService.del(`otp:${email}`);
+
+    // Émettre un événement pour notifier le module Notifications
+    const user = await this.usersService.findByEmail(email);
+    if (user) {
+      this.eventEmitter.emit('auth.registered', { userId: user.id });
+    }
 
     return { message: 'Compte vérifié avec succès. Vous pouvez maintenant vous connecter.' };
   }

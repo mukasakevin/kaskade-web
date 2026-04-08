@@ -1,11 +1,19 @@
-import { IsString, IsUUID, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsUUID } from 'class-validator';
 
 export class CreateRequestDto {
   @IsUUID()
+  @IsNotEmpty()
   serviceId: string;
 
   @IsString()
-  @IsOptional()
-  @MaxLength(500)
-  message?: string;
+  @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
 }

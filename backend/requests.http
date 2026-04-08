@@ -1,0 +1,90 @@
+# =========================================================================
+# 🚀 KASKADE - REQUESTS FEATURE TEST
+# =========================================================================
+
+@apiV1 = http://localhost:4000/api/v1
+@authUrl = {{apiV1}}/auth
+@requestsUrl = {{apiV1}}/requests
+
+# 📝 L'EMAIL DOIT ÊTRE UN COMPTE CLIENT
+@email = client@gmail.com
+@password = password123
+
+### -------------------------------------------------------------------------
+### 🔑 ÉTAPE 1 : SE CONNECTER EN TANT QUE CLIENT (Pour obtenir le token)
+### -------------------------------------------------------------------------
+# @name loginClient
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 📦 EXTRACTION DU TOKEN
+@accessToken = {{loginClient.response.body.tokens.accessToken}}
+
+### -------------------------------------------------------------------------
+### 📦 ÉTAPE 2 : CRÉER UNE DEMANDE
+### -------------------------------------------------------------------------
+# Il faut remplacer "REMPLACEZ_PAR_UN_ID_DE_SERVICE" par un véritable id de service issu de votre BDD
+@serviceId = REMPLACEZ_PAR_UN_ID_DE_SERVICE
+
+POST {{requestsUrl}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "description": "J'ai besoin de refaire l'installation électrique de mon salon.",
+  "address": "123 Avenue de Goma",
+  "date": "2026-05-01T10:00:00.000Z"
+}
+
+### -------------------------------------------------------------------------
+### 📦 ÉTAPE 3 : LISTER TOUTES LES DEMANDES
+### -------------------------------------------------------------------------
+GET {{requestsUrl}}
+Authorization: Bearer {{accessToken}}
+
+### -------------------------------------------------------------------------
+### 📦 ÉTAPE 4 : VOIR UNE DEMANDE SPÉCIFIQUE
+### -------------------------------------------------------------------------
+# @requestId = REMPLACEZ_PAR_L_ID_DE_LA_DEMANDE
+GET {{requestsUrl}}/{{requestId}}
+Authorization: Bearer {{accessToken}}
+
+### =========================================================================
+### 🛡️ FLOW ADMINISTRATEUR : VALIDATION DES DEMANDES
+### =========================================================================
+
+# 📝 Identifiants Admin
+@adminEmail = kaskade@gmail.com
+@adminPassword = password123
+
+### 🔑 ÉTAPE 5 : SE CONNECTER EN TANT QU'ADMIN
+# @name loginAdmin
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### 📦 EXTRACTION DU TOKEN ADMIN
+@adminToken = {{loginAdmin.response.body.tokens.accessToken}}
+
+### -------------------------------------------------------------------------
+### 🛡️ ÉTAPE 6 : APPROUVER UNE DEMANDE (PENDING -> APPROVED)
+### -------------------------------------------------------------------------
+PATCH {{requestsUrl}}/{{requestId}}/approve
+Authorization: Bearer {{adminToken}}
+
+### -------------------------------------------------------------------------
+### 🛡️ ÉTAPE 7 : REJETER UNE DEMANDE (PENDING -> REJECTED)
+### -------------------------------------------------------------------------
+PATCH {{requestsUrl}}/{{requestId}}/reject
+Authorization: Bearer {{adminToken}}
+

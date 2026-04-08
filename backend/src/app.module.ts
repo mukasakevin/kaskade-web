@@ -4,17 +4,16 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ThrottlerBehindProxyGuard } from './common/guards/throttler-behind-proxy.guard';
 import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
-import { RequestsModule } from './requests/requests.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { AdminModule } from './admin/admin.module';
+import { UsersModule } from './users/users.module';
+import { ProvidersModule } from './providers/providers.module';
 import { ServicesModule } from './services/services.module';
-
+import { NotificationsModule } from './notifications/notifications.module';
+import { RequestsModule } from './requests/requests.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -36,9 +35,9 @@ import { ServicesModule } from './services/services.module';
     MailModule,
     RedisModule,
     RequestsModule,
-    NotificationsModule,
-    AdminModule,
+    ProvidersModule,
     ServicesModule,
+    NotificationsModule,
   ],
   providers: [
     {

@@ -1,41 +1,28 @@
-import { Controller, Get, UseGuards, Req, Put, Param, Delete } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
+import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  async getNotifications(@Req() req: any) {
-    return this.prisma.notification.findMany({
-      where: { userId: req.user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    });
+  findAll(@CurrentUser('id') userId: string) {
+    return this.notificationsService.findAllForUser(userId);
   }
 
-  @Put(':id/read')
-  async markAsRead(@Param('id') id: string, @Req() req: any) {
-    return this.prisma.notification.updateMany({
-      where: { id, userId: req.user.id },
-      data: { isRead: true },
-    });
+  @Patch('read-all')
+  markAllAsRead(@CurrentUser('id') userId: string) {
+    return this.notificationsService.markAllAsRead(userId);
   }
 
-  @Put('read-all')
-  async markAllAsRead(@Req() req: any) {
-    return this.prisma.notification.updateMany({
-      where: { userId: req.user.id, isRead: false },
-      data: { isRead: true },
-    });
-  }
-
-  @Delete(':id')
-  async deleteNotification(@Param('id') id: string, @Req() req: any) {
-    return this.prisma.notification.deleteMany({
-      where: { id, userId: req.user.id },
-    });
+  @Patch(':id/read')
+  markAsRead(
+    @Param('id') notificationId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.notificationsService.markAsRead(notificationId, userId);
   }
 }

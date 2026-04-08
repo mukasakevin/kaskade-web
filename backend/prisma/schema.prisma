@@ -21,11 +21,19 @@ model User {
   
   metier        String?   
   experience    String?   @db.Text 
+  bio           String?   @db.Text 
   
   isVerified    Boolean   @default(false) 
   isActive      Boolean   @default(true)
   refreshToken  String?   
   
+  // Relations
+  clientRequests       Request[]           @relation("ClientRequests")
+  providerRequests     Request[]           @relation("ProviderRequests")
+  providerApplications ProviderApplication[]
+  services             Service[]
+  notifications        Notification[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
@@ -33,6 +41,68 @@ model User {
   @@index([email])
   @@index([phone])
   @@index([quartier]) 
+}
+
+// Catalogue de services gérés par l'admin
+model Service {
+  id          String    @id @default(uuid())
+  name        String    // Ex: "Réparation électrique", "Nettoyage maison"
+  category    String    // Ex: "ÉLECTRICITÉ", "MÉNAGE"
+  description String?   @db.Text
+  isActive    Boolean   @default(true)
+
+  // Relation vers les demandes
+  requests    Request[]
+  
+  // Relation Many-to-Many vers les prestataires
+  providers   User[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category])
+}
+
+// Demande de service créée par un CLIENT
+model Request {
+  id          String        @id @default(uuid())
+  clientId    String
+  serviceId   String
+  providerId  String?       // Prestataire qui a accepté la mission
+  description String        @db.Text
+  address     String
+  date        DateTime
+  status      RequestStatus @default(PENDING)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  client      User          @relation("ClientRequests", fields: [clientId], references: [id])
+  provider    User?         @relation("ProviderRequests", fields: [providerId], references: [id])
+  service     Service       @relation(fields: [serviceId], references: [id])
+
+  @@index([clientId])
+  @@index([serviceId])
+  @@index([providerId])
+  @@index([status])
+}
+
+// Candidature pour devenir Prestataire
+model ProviderApplication {
+  id          String        @id @default(uuid())
+  
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  
+  motivation  String        @db.Text
+  status      RequestStatus @default(PENDING) // On utilise le même enum pour PENDING, APPROVED, REJECTED
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 enum Role {
@@ -46,3 +116,29 @@ enum Status {
   EN_MISSION    
   INDISPONIBLE  
 }
+
+// Workflow des demandes de service et applications
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_PROGRESS  // Prestataire a accepté la mission
+  COMPLETED    // Mission terminée
+}
+
+// Notifications In-App 
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  type      String   // Ex: AUTH_WELCOME, PROVIDER_APPLY, REQUEST_CREATED...
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
