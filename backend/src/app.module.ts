@@ -14,6 +14,7 @@ import { ProvidersModule } from './providers/providers.module';
 import { ServicesModule } from './services/services.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RequestsModule } from './requests/requests.module';
+import { PaymentsModule } from './payments/payments.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -38,6 +39,7 @@ import { RequestsModule } from './requests/requests.module';
     ProvidersModule,
     ServicesModule,
     NotificationsModule,
+    PaymentsModule,
   ],
   providers: [
     {

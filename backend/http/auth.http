@@ -1,0 +1,176 @@
+### ============================================================
+### KASKADE - Module Auth & Users
+### ============================================================
+### Extension VSCode requise: REST Client (humao.rest-client)
+### Variables à renseigner dans .env ou dans ce fichier
+### ============================================================
+
+@baseUrl = http://localhost:3000
+
+# ─── TOKENS (remplir après login) ───────────────────────────────────────────
+@clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
+@adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
+@providerToken = REPLACE_WITH_PROVIDER_ACCESS_TOKEN
+
+
+### ============================================================
+### 0.1 - REGISTER un CLIENT
+### Retour attendu : 201 Created + message OTP envoyé
+### ============================================================
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "client@test.com",
+  "password": "Password123!",
+  "fullName": "Jean Dupont",
+  "phone": "+33612345678",
+  "role": "CLIENT"
+}
+
+
+### ============================================================
+### 0.2 - REGISTER un PROVIDER (pour avoir un compte prestataire)
+### Retour attendu : 201 Created + OTP envoyé
+### ============================================================
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "provider@test.com",
+  "password": "Password123!",
+  "fullName": "Marie Martin",
+  "phone": "+33687654321",
+  "role": "CLIENT"
+}
+
+
+### ============================================================
+### 0.3 - VERIFY OTP du CLIENT
+### Remplacer "123456" par l'OTP reçu par email
+### Retour attendu : 200 OK + { verified: true }
+### ============================================================
+POST {{baseUrl}}/auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "client@test.com",
+  "otp": "123456"
+}
+
+
+### ============================================================
+### 0.4 - VERIFY OTP du PROVIDER (compte secondaire)
+### ============================================================
+POST {{baseUrl}}/auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "provider@test.com",
+  "otp": "123456"
+}
+
+
+### ============================================================
+### 0.5 - LOGIN CLIENT → récupérer {{clientToken}}
+### Retour attendu : 200 + { accessToken, refreshToken }
+### Copier accessToken dans @clientToken en haut du fichier
+### ============================================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "client@test.com",
+  "password": "Password123!"
+}
+
+
+### ============================================================
+### 0.6 - LOGIN ADMIN (compte pré-existant en BDD via seed Prisma)
+### Copier accessToken dans @adminToken en haut du fichier
+### ============================================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@kaskade.com",
+  "password": "AdminPassword123!"
+}
+
+
+### ============================================================
+### 0.7 - LOGIN PROVIDER (compte pré-existant ou après provider-application.http)
+### Copier accessToken dans @providerToken en haut du fichier
+### ============================================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "provider@test.com",
+  "password": "Password123!"
+}
+
+
+### ============================================================
+### 0.8 - /auth/me → vérifier le profil CLIENT
+### Retour attendu : 200 + { id, email, role: "CLIENT", ... }
+### ============================================================
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{clientToken}}
+
+
+### ============================================================
+### 0.9 - /auth/me → vérifier le profil ADMIN
+### Retour attendu : 200 + { id, email, role: "ADMIN", ... }
+### ============================================================
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{adminToken}}
+
+
+### ============================================================
+### 0.10 - Forgot Password (Reset par Email)
+### ============================================================
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "client@test.com"
+}
+
+
+### ============================================================
+### 0.11 - Reset Password (avec token reçu par email)
+### ============================================================
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "REPLACE_WITH_RESET_TOKEN",
+  "newPassword": "NewPassword456!"
+}
+
+
+### ============================================================
+### 0.12 - Update profil connecté (CLIENT)
+### ============================================================
+PATCH {{baseUrl}}/auth/me
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "fullName": "Jean Dupont (Modifié)"
+}
+
+
+### ============================================================
+### 0.13 - Refresh Token
+### ============================================================
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer REPLACE_WITH_REFRESH_TOKEN
+
+
+### ============================================================
+### 0.14 - Logout
+### ============================================================
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{clientToken}}

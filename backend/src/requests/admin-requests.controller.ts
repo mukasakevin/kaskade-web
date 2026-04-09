@@ -23,7 +23,7 @@ export class AdminRequestsController {
     return this.requestsService.findOne(id);
   }
 
-  // Approuver une demande
+  // Approuver une demande (le prix est automatiquement lu depuis le Service)
   @Patch(':id/approve')
   approve(@Param('id') id: string) {
     return this.requestsService.approve(id);

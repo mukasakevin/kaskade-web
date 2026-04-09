@@ -49,6 +49,7 @@ model Service {
   name        String    // Ex: "Réparation électrique", "Nettoyage maison"
   category    String    // Ex: "ÉLECTRICITÉ", "MÉNAGE"
   description String?   @db.Text
+  price       Float     // Prix de base du service (fixé par l'Admin)
   isActive    Boolean   @default(true)
 
   // Relation vers les demandes
@@ -68,10 +69,15 @@ model Request {
   id          String        @id @default(uuid())
   clientId    String
   serviceId   String
-  providerId  String?       // Prestataire qui a accepté la mission
+  providerId  String?
+
   description String        @db.Text
   address     String
-  date        DateTime
+  scheduledAt DateTime
+
+  price       Float?
+  acceptedAt  DateTime?
+
   status      RequestStatus @default(PENDING)
 
   createdAt   DateTime      @default(now())
@@ -119,11 +125,13 @@ enum Status {
 
 // Workflow des demandes de service et applications
 enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS  // Prestataire a accepté la mission
-  COMPLETED    // Mission terminée
+  PENDING          // Demande créée par le client
+  APPROVED         // Admin a approuvé + prix fixé
+  REJECTED         // Admin a rejeté
+  ACCEPTED         // Provider a accepté (en attente de l'acompte)
+  IN_PROGRESS      // Acompte (50%) versé, mission active
+  AWAITING_FINAL   // Provider a terminé, en attente du paiement final
+  COMPLETED        // Paiement final (50%) reçu, mission clôturée
 }
 
 // Notifications In-App 
@@ -141,4 +149,4 @@ model Notification {
   @@index([userId])
   @@index([isRead])
 }
-
+

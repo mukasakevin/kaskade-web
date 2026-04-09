@@ -1,0 +1,114 @@
+### ============================================================
+### KASKADE - Module Services (Catalogue)
+### Workflow : ADMIN crée/gère → CLIENT/PROVIDER consultent
+### ============================================================
+### Prérequis : auth.http exécuté pour obtenir les tokens
+### ============================================================
+
+@baseUrl = http://localhost:3000
+@adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
+@clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
+
+# ─── IDs (remplir après création) ────────────────────────────
+@serviceId = REPLACE_WITH_SERVICE_ID
+
+
+### ============================================================
+### 2.1 - Admin : Créer un nouveau service
+### Retour attendu : 201 + { id, name, category, isActive: true }
+### Copier l'ID retourné dans @serviceId
+### ============================================================
+POST {{baseUrl}}/admin/services
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Plomberie d'urgence",
+  "category": "PLOMBERIE",
+  "description": "Intervention rapide pour fuites, canalisations bouchées et installations sanitaires.",
+  "price": 120.00
+}
+
+
+### ============================================================
+### 2.2 - Admin : Créer un 2e service (pour les tests de demandes)
+### ============================================================
+POST {{baseUrl}}/admin/services
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Electricité générale",
+  "category": "ELECTRICITE",
+  "description": "Tableau électrique, prises, éclairage et dépannages.",
+  "price": 95.00
+}
+
+
+### ============================================================
+### 2.3 - CAS D'ERREUR : Créer un service en doublon
+### Retour attendu : 409 Conflict "Un service avec ce nom existe déjà"
+### ============================================================
+POST {{baseUrl}}/admin/services
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Plomberie d'urgence",
+  "category": "PLOMBERIE"
+}
+
+
+### ============================================================
+### 2.4 - Lister tous les services (PUBLIC / tous rôles)
+### Retour attendu : 200 + [ { id, name, category, isActive }, ... ]
+### ============================================================
+GET {{baseUrl}}/services
+Authorization: Bearer {{clientToken}}
+
+
+### ============================================================
+### 2.5 - Admin : Lister tous les services (vue admin)
+### ============================================================
+GET {{baseUrl}}/admin/services
+Authorization: Bearer {{adminToken}}
+
+
+### ============================================================
+### 2.6 - Admin : Modifier un service (désactiver, changer description)
+### Retour attendu : 200 + { ...service, isActive: false }
+### ============================================================
+PATCH {{baseUrl}}/admin/services/{{serviceId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "description": "Description mise à jour - Tarif révisé.",
+  "isActive": false
+}
+
+
+### ============================================================
+### 2.7 - Admin : Réactiver un service
+### ============================================================
+PATCH {{baseUrl}}/admin/services/{{serviceId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "isActive": true
+}
+
+
+### ============================================================
+### 2.8 - CAS D'ERREUR : CLIENT essaie de créer un service
+### Retour attendu : 403 Forbidden
+### ============================================================
+POST {{baseUrl}}/admin/services
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "name": "Service non autorisé",
+  "category": "TEST"
+}

@@ -15,5 +15,5 @@ export class CreateRequestDto {
 
   @IsDateString()
   @IsNotEmpty()
-  date: string;
+  scheduledAt: string;
 }

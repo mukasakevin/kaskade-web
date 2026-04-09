@@ -203,7 +203,7 @@ export class ProvidersService {
     return this.prisma.request.findMany({
       where: {
         serviceId: { in: assignedServiceIds },
-        status: RequestStatus.PENDING,
+        status: RequestStatus.APPROVED,
       },
       include: {
         service: true,
@@ -241,7 +241,7 @@ export class ProvidersService {
       throw new NotFoundException('Demande introuvable.');
     }
 
-    if (request.status !== RequestStatus.PENDING) {
+    if (request.status !== RequestStatus.APPROVED) {
       throw new BadRequestException('Cette demande n\'est plus disponible.');
     }
 
@@ -256,8 +256,9 @@ export class ProvidersService {
       this.prisma.request.update({
         where: { id: requestId },
         data: {
-          status: RequestStatus.IN_PROGRESS,
+          status: RequestStatus.ACCEPTED,
           providerId: providerId,
+          acceptedAt: new Date(),
         },
       }),
       this.prisma.user.update({
@@ -297,15 +298,17 @@ export class ProvidersService {
       throw new BadRequestException('Vous n\'êtes pas le prestataire assigné à cette mission.');
     }
 
+    // Le client doit avoir versé l'acompte avant que le provider puisse terminer
     if (request.status !== RequestStatus.IN_PROGRESS) {
-      throw new BadRequestException('La mission n\'est pas en cours.');
+      throw new BadRequestException(
+        'La mission ne peut pas être marquée comme terminée : l\'acompte doit d\'abord être payé.'
+      );
     }
 
-    // Marquer la mission terminée + libérer le prestataire
     const [updatedRequest] = await this.prisma.$transaction([
       this.prisma.request.update({
         where: { id: requestId },
-        data: { status: RequestStatus.COMPLETED },
+        data: { status: RequestStatus.AWAITING_FINAL },
       }),
       this.prisma.user.update({
         where: { id: providerId },

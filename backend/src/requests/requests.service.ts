@@ -126,9 +126,13 @@ export class RequestsService {
       throw new BadRequestException('Seules les demandes en attente peuvent être approuvées.');
     }
 
+    // Le prix est hérité du Service catalogue (fixé à la création du service)
+    const service = await this.prisma.service.findUnique({ where: { id: request.serviceId } });
+    const price = service?.price ?? 0;
+
     const updatedRequest = await this.prisma.request.update({
       where: { id },
-      data: { status: RequestStatus.APPROVED },
+      data: { status: RequestStatus.APPROVED, price },
     });
 
     this.eventEmitter.emit('request.approved', { requestId: updatedRequest.id, serviceId: updatedRequest.serviceId });
@@ -148,14 +152,5 @@ export class RequestsService {
       data: { status: RequestStatus.REJECTED },
     });
   }
-
-  // ─── MOCK PAYMENT ─────────────────────────────────────────────────────────
-  async mockPaymentDeposit(id: string, clientId: string) {
-    const request = await this.findOneForClient(id, clientId);
-    
-    // Simuler le paiement validé (Acompte 50%)
-    this.eventEmitter.emit('payment.deposit_confirmed', { requestId: request.id });
-    
-    return { message: "Paiement de l'acompte (50%) confirmé avec succès (Mock)." };
-  }
 }
+

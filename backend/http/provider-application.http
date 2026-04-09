@@ -1,0 +1,101 @@
+### ============================================================
+### KASKADE - Module Provider Application
+### Workflow : CLIENT soumet candidature → ADMIN approve → PROVIDER
+### ============================================================
+### Prérequis : auth.http exécuté pour obtenir les tokens
+### ============================================================
+
+@baseUrl = http://localhost:3000
+@clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
+@adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
+
+# ─── IDs (remplir au fur et à mesure des retours) ────────────
+@applicationId = REPLACE_WITH_APPLICATION_ID
+
+
+### ============================================================
+### 1.1 - Soumettre une candidature prestataire (CLIENT)
+### Retour attendu : 201 Created + { id, status: "PENDING" }
+### Copier l'ID retourné dans @applicationId
+### ============================================================
+POST {{baseUrl}}/providers/apply
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "motivation": "Je suis plombier certifié avec 10 ans d'expérience.",
+  "experience": "Réparations, installations sanitaires, dépannages urgence.",
+  "metier": "Plomberie"
+}
+
+
+### ============================================================
+### 1.2 - Consulter SA candidature (CLIENT)
+### Retour attendu : 200 + { status: "PENDING", motivation, ... }
+### ============================================================
+GET {{baseUrl}}/providers/my-application
+Authorization: Bearer {{clientToken}}
+
+
+### ============================================================
+### 1.3 - Admin : Lister toutes les candidatures
+### Retour attendu : 200 + [ { id, status, user: {...} }, ... ]
+### ============================================================
+GET {{baseUrl}}/admin/providers/applications
+Authorization: Bearer {{adminToken}}
+
+
+### ============================================================
+### 1.4 - Admin : Approuver la candidature
+### Retour attendu : 200 + { status: "APPROVED", user.role: "PROVIDER" }
+### ============================================================
+PATCH {{baseUrl}}/admin/providers/applications/{{applicationId}}/approve
+Authorization: Bearer {{adminToken}}
+
+
+### ============================================================
+### 1.5 - Admin : Rejeter une candidature (cas d'erreur)
+### Retour attendu : 200 + { status: "REJECTED" }
+### ============================================================
+PATCH {{baseUrl}}/admin/providers/applications/{{applicationId}}/reject
+Authorization: Bearer {{adminToken}}
+
+
+### ============================================================
+### 1.6 - CAS D'ERREUR : Soumettre 2 fois la même candidature
+### Retour attendu : 409 Conflict "Une candidature est déjà en cours"
+### ============================================================
+POST {{baseUrl}}/providers/apply
+Authorization: Bearer {{clientToken}}
+Content-Type: application/json
+
+{
+  "motivation": "Deuxième tentative invalide.",
+  "experience": "etc.",
+  "metier": "Plomberie"
+}
+
+
+### ============================================================
+### 1.7 - Admin : Assigner des services à un prestataire approuvé
+### Remplacer {{applicationId}} par l'ID du prestataire (userId)
+### Retour attendu : 200 + liste des services assignés
+### ============================================================
+POST {{baseUrl}}/admin/providers/{{applicationId}}/services
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "serviceIds": [
+    "REPLACE_WITH_SERVICE_UUID_1",
+    "REPLACE_WITH_SERVICE_UUID_2"
+  ]
+}
+
+
+### ============================================================
+### 1.8 - Admin : Retirer un service d'un prestataire
+### Retour attendu : 200 OK + services mis à jour
+### ============================================================
+DELETE {{baseUrl}}/admin/providers/{{applicationId}}/services/REPLACE_WITH_SERVICE_UUID_1
+Authorization: Bearer {{adminToken}}

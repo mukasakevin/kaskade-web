@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsPositive, MinLength } from 'class-validator';
 
 export class CreateServiceDto {
   @IsString()
@@ -13,4 +13,8 @@ export class CreateServiceDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsNumber()
+  @IsPositive()
+  price: number;
 }
