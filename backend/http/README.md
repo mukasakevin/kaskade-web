@@ -5,7 +5,7 @@ Suite de fichiers `.http` pour valider manuellement chaque module backend Kaskad
 ## Prérequis
 
 1. **Extension VSCode** : [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) (par humao)
-2. **Backend démarré** : `pnpm run start:dev` sur le port `3000`
+2. **Backend démarré** : `pnpm run start:dev` sur le port `4000` (URL: `http://localhost:4000/api/v1`)
 3. **Base de données migrée** : `npx prisma migrate dev`
 
 ---

@@ -18,7 +18,6 @@ import { Role } from '@prisma/client';
 
 // ─── Routes publiques (utilisateurs authentifiés) ─────────────────────────────
 @Controller('services')
-@UseGuards(JwtAuthGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 

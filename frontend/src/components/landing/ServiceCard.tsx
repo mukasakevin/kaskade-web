@@ -199,7 +199,7 @@ export default function ServiceCardBento({ service }: { service: Service }) {
           {/* Footer */}
           <div className="mt-auto pt-4 border-t border-zinc-100 flex items-center justify-between relative min-h-[60px]">
             <div className="flex items-center gap-2 transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-2">
-              {service.provider.isVerified && (
+              {service.provider?.isVerified && (
                 <div className="bg-[#25D366]/10 p-1 rounded-full">
                   <ShieldCheck className="w-4 h-4 text-[#25D366]" />
                 </div>

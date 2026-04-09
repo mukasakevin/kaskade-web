@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SplashScreen from "../components/SplashScreen";
 import Navbar from "../components/landing/Navbar";
@@ -10,9 +10,20 @@ import Process from "../components/landing/Process";
 import ServiceExplorer from "../components/landing/ServiceExplorer";
 import Footer from "../components/landing/Footer";
 import { MessageCircle, Phone } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect ADMIN away from landing page
+  useEffect(() => {
+    if (!isLoading && user?.role === 'ADMIN') {
+      router.replace('/admin/dashboard');
+    }
+  }, [user, isLoading, router]);
 
   return (
     <main className="bg-off-white min-h-screen text-chocolat font-sans selection:bg-ocre/20 overflow-x-hidden">

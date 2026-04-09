@@ -13,7 +13,7 @@ export interface Service {
   description: string;
   price: number;
   image: string | null;
-  provider: {
+  provider?: {
     id: string;
     fullName: string;
     isVerified: boolean;

@@ -6,7 +6,7 @@
 ###             (Provider a accepté la mission)
 ### ============================================================
 
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:4000/api/v1
 @clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
 
 # ─── IDs ─────────────────────────────────────────────────────

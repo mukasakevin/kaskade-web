@@ -1,176 +1,119 @@
 ### ============================================================
-### KASKADE - Module Auth & Users
+### VARIABLES GLOBALES & CAPTURE AUTO
 ### ============================================================
-### Extension VSCode requise: REST Client (humao.rest-client)
-### Variables à renseigner dans .env ou dans ce fichier
-### ============================================================
+@baseUrl = http://localhost:4000/api/v1
 
-@baseUrl = http://localhost:3000
+# Les variables ci-dessous captent le token du dernier login réussi
+@clientToken = {{loginClient.response.body.tokens.accessToken}}
+@adminToken = {{loginAdmin.response.body.tokens.accessToken}}
+@clientRefreshToken = {{loginClient.response.body.tokens.refreshToken}}
 
-# ─── TOKENS (remplir après login) ───────────────────────────────────────────
-@clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
-@adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
-@providerToken = REPLACE_WITH_PROVIDER_ACCESS_TOKEN
-
-
-### ============================================================
-### 0.1 - REGISTER un CLIENT
-### Retour attendu : 201 Created + message OTP envoyé
-### ============================================================
+### ------------------------------------------------------------
+### 1. REGISTER (Inscription)
+### ------------------------------------------------------------
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "email": "client@test.com",
-  "password": "Password123!",
-  "fullName": "Jean Dupont",
-  "phone": "+33612345678",
+  "email": "obedburindi@gmail.com",
+  "password": "password123",
+  "fullName": "Obed Burind",
+  "phone": "+243999999999",
+  "quartier": "Gombe",
   "role": "CLIENT"
 }
 
-
-### ============================================================
-### 0.2 - REGISTER un PROVIDER (pour avoir un compte prestataire)
-### Retour attendu : 201 Created + OTP envoyé
-### ============================================================
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "email": "provider@test.com",
-  "password": "Password123!",
-  "fullName": "Marie Martin",
-  "phone": "+33687654321",
-  "role": "CLIENT"
-}
-
-
-### ============================================================
-### 0.3 - VERIFY OTP du CLIENT
-### Remplacer "123456" par l'OTP reçu par email
-### Retour attendu : 200 OK + { verified: true }
-### ============================================================
+### ------------------------------------------------------------
+### 2. VERIFY OTP (Validation)
+### ------------------------------------------------------------
 POST {{baseUrl}}/auth/verify-otp
 Content-Type: application/json
 
 {
-  "email": "client@test.com",
-  "otp": "123456"
+  "email": "obedburindi@gmail.com",
+  "otp": "164393"
 }
 
-
-### ============================================================
-### 0.4 - VERIFY OTP du PROVIDER (compte secondaire)
-### ============================================================
-POST {{baseUrl}}/auth/verify-otp
+### ------------------------------------------------------------
+### 3. RESEND OTP (Renvoyer le code)
+### ------------------------------------------------------------
+POST {{baseUrl}}/auth/resend-otp
 Content-Type: application/json
 
 {
-  "email": "provider@test.com",
-  "otp": "123456"
+  "email": "obedburindi@gmail.com"
 }
 
-
-### ============================================================
-### 0.5 - LOGIN CLIENT → récupérer {{clientToken}}
-### Retour attendu : 200 + { accessToken, refreshToken }
-### Copier accessToken dans @clientToken en haut du fichier
-### ============================================================
+### ------------------------------------------------------------
+### 4. LOGIN CLIENT (Capture Auto @clientToken)
+### ------------------------------------------------------------
+# @name loginClient
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "client@test.com",
-  "password": "Password123!"
+  "email": "obedburindi@gmail.com",
+  "password": "password123"
 }
 
-
-### ============================================================
-### 0.6 - LOGIN ADMIN (compte pré-existant en BDD via seed Prisma)
-### Copier accessToken dans @adminToken en haut du fichier
-### ============================================================
+### ------------------------------------------------------------
+### 5. LOGIN ADMIN (Capture Auto @adminToken)
+### ------------------------------------------------------------
+# @name loginAdmin
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@kaskade.com",
-  "password": "AdminPassword123!"
+  "email": "kaskade@gmail.com",
+  "password": "password123"
 }
 
-
-### ============================================================
-### 0.7 - LOGIN PROVIDER (compte pré-existant ou après provider-application.http)
-### Copier accessToken dans @providerToken en haut du fichier
-### ============================================================
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "provider@test.com",
-  "password": "Password123!"
-}
-
-
-### ============================================================
-### 0.8 - /auth/me → vérifier le profil CLIENT
-### Retour attendu : 200 + { id, email, role: "CLIENT", ... }
-### ============================================================
+### ------------------------------------------------------------
+### 6. GET ME (Voir mon profil)
+### ------------------------------------------------------------
 GET {{baseUrl}}/auth/me
 Authorization: Bearer {{clientToken}}
 
-
-### ============================================================
-### 0.9 - /auth/me → vérifier le profil ADMIN
-### Retour attendu : 200 + { id, email, role: "ADMIN", ... }
-### ============================================================
-GET {{baseUrl}}/auth/me
-Authorization: Bearer {{adminToken}}
-
-
-### ============================================================
-### 0.10 - Forgot Password (Reset par Email)
-### ============================================================
-POST {{baseUrl}}/auth/forgot-password
-Content-Type: application/json
-
-{
-  "email": "client@test.com"
-}
-
-
-### ============================================================
-### 0.11 - Reset Password (avec token reçu par email)
-### ============================================================
-POST {{baseUrl}}/auth/reset-password
-Content-Type: application/json
-
-{
-  "token": "REPLACE_WITH_RESET_TOKEN",
-  "newPassword": "NewPassword456!"
-}
-
-
-### ============================================================
-### 0.12 - Update profil connecté (CLIENT)
-### ============================================================
+### ------------------------------------------------------------
+### 7. UPDATE ME (La 10ème route : Modifier mon profil)
+### ------------------------------------------------------------
 PATCH {{baseUrl}}/auth/me
 Authorization: Bearer {{clientToken}}
 Content-Type: application/json
 
 {
-  "fullName": "Jean Dupont (Modifié)"
+  "fullName": "Obed Burindi (Modifié)"
 }
 
+### ------------------------------------------------------------
+### 8. FORGOT PASSWORD (Demander réinitialisation)
+### ------------------------------------------------------------
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
 
-### ============================================================
-### 0.13 - Refresh Token
-### ============================================================
+{
+  "email": "obedburindi@gmail.com"
+}
+
+### ------------------------------------------------------------
+### 9. RESET PASSWORD (Nouveau mot de passe)
+### ------------------------------------------------------------
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "bbd3cd616297e60a2ea045cd647f6f85c263cc05c5f774a70de4f8a672d94e6d",
+  "newPassword": "Password123"
+}
+
+### ------------------------------------------------------------
+### 10. REFRESH & LOGOUT
+### ------------------------------------------------------------
+
+# @name refreshToken
 POST {{baseUrl}}/auth/refresh
-Authorization: Bearer REPLACE_WITH_REFRESH_TOKEN
+Authorization: Bearer {{clientRefreshToken}}
 
-
-### ============================================================
-### 0.14 - Logout
-### ============================================================
+### 
 POST {{baseUrl}}/auth/logout
 Authorization: Bearer {{clientToken}}

@@ -15,6 +15,7 @@ import { ServicesModule } from './services/services.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RequestsModule } from './requests/requests.module';
 import { PaymentsModule } from './payments/payments.module';
+import { AdminDashboardModule } from './admin/dashboard/admin-dashboard.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -40,6 +41,7 @@ import { PaymentsModule } from './payments/payments.module';
     ServicesModule,
     NotificationsModule,
     PaymentsModule,
+    AdminDashboardModule,
   ],
   providers: [
     {

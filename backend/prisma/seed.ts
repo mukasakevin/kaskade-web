@@ -89,6 +89,7 @@ async function main() {
         category,
         name: `Service standard - ${category}`, // placeholder name
         description: `Description pour les services de type ${category}`,
+        price: 50.0,
         isActive: true,
       }
     });

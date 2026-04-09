@@ -152,5 +152,30 @@ export class RequestsService {
       data: { status: RequestStatus.REJECTED },
     });
   }
+
+  // ─── PAYMENTS (MOCK) ──────────────────────────────────────────────────────
+
+  async mockPaymentDeposit(id: string, clientId: string) {
+    const request = await this.findOneForClient(id, clientId);
+
+    if (request.status !== RequestStatus.ACCEPTED) {
+      throw new BadRequestException(
+        "Le paiement de l'acompte n'est possible que pour les demandes acceptées.",
+      );
+    }
+
+    const updatedRequest = await this.prisma.request.update({
+      where: { id },
+      data: { status: RequestStatus.IN_PROGRESS },
+      include: { service: true },
+    });
+
+    this.eventEmitter.emit('request.payment_deposit_received', {
+      requestId: updatedRequest.id,
+      clientId,
+    });
+
+    return updatedRequest;
+  }
 }
 

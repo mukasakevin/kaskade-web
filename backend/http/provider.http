@@ -6,7 +6,7 @@
 ### Le @requestId doit être au status APPROVED
 ### ============================================================
 
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:4000/api/v1
 @providerToken = REPLACE_WITH_PROVIDER_ACCESS_TOKEN
 @adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
 @clientToken = REPLACE_WITH_CLIENT_ACCESS_TOKEN
