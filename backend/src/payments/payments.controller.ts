@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Logger } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { MockPaymentDto } from './dto/mock-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -11,7 +11,9 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.CLIENT)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  private readonly logger = new Logger(PaymentsController.name);
+
+  constructor(private readonly paymentsService: PaymentsService) { }
 
   // ─── ACOMPTE 50% ─────────────────────────────────────────────────────────
   // Requis : status === ACCEPTED (provider a accepté)
@@ -21,17 +23,17 @@ export class PaymentsController {
     @Body() dto: MockPaymentDto,
     @CurrentUser('id') clientId: string,
   ) {
+    this.logger.log(`CLIENT : Paiement de l'acompte (50%) initié pour la demande ID: ${dto.requestId}`);
     return this.paymentsService.mockDeposit(dto.requestId, clientId);
   }
 
-  // ─── PAIEMENT FINAL 50% ───────────────────────────────────────────────────
-  // Requis : status === AWAITING_FINAL (provider a terminé)
-  // Effet  : status → COMPLETED (mission clôturée)
+  // donnees mock pour le paiement final
   @Post('mock/final')
   async mockFinalPayment(
     @Body() dto: MockPaymentDto,
     @CurrentUser('id') clientId: string,
   ) {
+    this.logger.log(`CLIENT : Paiement final (50%) initié pour la demande ID: ${dto.requestId}`);
     return this.paymentsService.mockFinalPayment(dto.requestId, clientId);
   }
 }

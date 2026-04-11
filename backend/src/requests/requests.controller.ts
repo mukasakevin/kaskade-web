@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Logger } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
@@ -12,6 +12,8 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.CLIENT)
 export class RequestsController {
+  private readonly logger = new Logger(RequestsController.name);
+
   constructor(private readonly requestsService: RequestsService) {}
 
   // Créer une demande de service
@@ -20,6 +22,7 @@ export class RequestsController {
     @CurrentUser('id') clientId: string,
     @Body() createRequestDto: CreateRequestDto,
   ) {
+    this.logger.log(`CLIENT : Création d'une nouvelle demande par l'utilisateur ID: ${clientId}`);
     return this.requestsService.create(clientId, createRequestDto);
   }
 
@@ -51,12 +54,4 @@ export class RequestsController {
     return this.requestsService.removeForClient(id, clientId);
   }
 
-  // ─── MOCK PAYMENT ─────────────────────────────────────────────────────────
-  @Patch(':id/mock-payment')
-  mockPayment(
-    @Param('id') id: string,
-    @CurrentUser('id') clientId: string,
-  ) {
-    return this.requestsService.mockPaymentDeposit(id, clientId);
-  }
 }

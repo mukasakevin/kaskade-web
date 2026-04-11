@@ -8,6 +8,7 @@ import {
   UserCircle,
   Bell,
   Settings,
+  TrendingUp,
   LogOut
 } from "lucide-react";
 import Link from "next/link";
@@ -16,11 +17,12 @@ import { useAuth } from "@/lib/auth-context";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
-  { name: "Demandes", icon: MessageSquare, href: "/admin/requests" },
-  { name: "Prestataires", icon: Users, href: "/admin/users" },
-  { name: "Services", icon: Briefcase, href: "/admin/services" },
-  { name: "Clients", icon: UserCircle, href: "/admin/people" },
-  { name: "Notifications", icon: Bell, href: "/admin/notifications" },
+  { name: "Clients", icon: UserCircle, href: "/admin/client" },
+  { name: "Prestataires", icon: Users, href: "/admin/prestataire" },
+  { name: "Services", icon: Briefcase, href: "/admin/service" },
+  { name: "Demandes", icon: MessageSquare, href: "/admin/request" },
+  { name: "Revenus", icon: TrendingUp, href: "/admin/revenu" },
+  { name: "Notifications", icon: Bell, href: "/admin/notification" },
 ];
 
 export default function Sidebar() {
@@ -53,8 +55,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-8 space-y-1">
+      {/* Navigation - Scrollable area (Sans barre visible pour un look Premium) */}
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [-ms-overflow-style:none]">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -62,8 +64,8 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-4 px-6 py-4 rounded-none transition-all duration-300 group ${isActive
-                  ? "bg-[#BC9C6C] text-[#321B13]"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "bg-[#BC9C6C] text-[#321B13]"
+                : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
             >
               <item.icon className={`w-4 h-4 ${isActive ? "text-[#321B13]" : "group-hover:text-[#BC9C6C] transition-colors"}`} />
@@ -73,49 +75,19 @@ export default function Sidebar() {
             </Link>
           );
         })}
-
-        {/* Support Section Placeholder */}
-        <div className="mt-12 px-6 py-8 mx-2 bg-white/5 border border-white/5 rounded-none flex flex-col gap-4">
-          <div className="w-8 h-8 rounded-full bg-[#BC9C6C]/20 flex items-center justify-center">
-            <Settings className="w-4 h-4 text-[#BC9C6C]" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-white mb-1">Support Admin</p>
-            <p className="text-[9px] text-white/40 leading-relaxed">Besoin d'aide ? Contactez l'équipe technique Kaskade.</p>
-          </div>
-          <button className="w-full py-3 bg-[#BC9C6C] text-[#321B13] text-[9px] font-black uppercase tracking-widest hover:bg-white transition-colors">
-            Ouvrir un ticket
-          </button>
-        </div>
       </nav>
 
-      {/* Profile & Footer */}
-      <div className="px-6 py-8 border-t border-white/5 space-y-6 bg-black/10">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-[#BC9C6C] flex items-center justify-center text-[#321B13] font-black text-xs">
-            {user?.fullName.charAt(0)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white truncate">{user?.fullName}</p>
-            <p className="text-[9px] text-white/40 uppercase tracking-widest font-bold">Administrateur</p>
-          </div>
-          <button
-            onClick={logout}
-            className="p-2 text-white/20 hover:text-red-400 transition-colors"
-            title="Déconnexion"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex justify-between items-center px-1">
-          <p className="text-[8px] text-white/10 uppercase tracking-[0.3em] font-bold">
-            v1.0.4 r-alpha
-          </p>
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500/50" />
-        </div>
+      {/* Logout Footer */}
+      <div className="border-t border-white/5 bg-black/20 p-6">
+        <button
+          onClick={logout}
+          className="flex items-center justify-center gap-3 w-full py-3.5 px-4 bg-white/5 hover:bg-red-500/10 text-white/40 hover:text-red-400 border border-white/5 hover:border-red-500/20 transition-all group"
+          title="Déconnexion"
+        >
+          <LogOut className="w-3 h-3 group-hover:rotate-12 transition-transform" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-0.5">Se déconnecter</span>
+        </button>
       </div>
-
     </aside>
   );
 }

@@ -27,7 +27,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "obedburindi@gmail.com",
+  "email": "client@gmail.com",
   "password": "password123"
 }
 
@@ -50,9 +50,9 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "email": "nouveau.client@test.com",
-  "password": "Password123!",
-  "fullName": "Alice Nouveau",
+  "email": "alice@test.com",
+  "password": "Password123",
+  "fullName": "Alice New",
   "phone": "+33699887766",
   "quartier": "Bandalungwa",
   "role": "CLIENT"
@@ -67,10 +67,10 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "email": "provider.direct@test.com",
+  "email": "provider@test.com",
   "password": "Password123!",
   "fullName": "Bob Direct",
-  "phone": "+33611223344",
+  "phone": "+33611223343",
   "quartier": "Limete",
   "role": "PROVIDER"
 }
@@ -103,8 +103,8 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "fullName": "Alice Modifiée",
-  "phone": "+33600000001"
+  "fullName": "Alice Wetu",
+  "phone": "+33600000002"
 }
 
 
@@ -147,7 +147,7 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "email": "admin@kaskade.com",
+  "email": "client1@gmail.com",
   "password": "Password123!",
   "fullName": "Doublon Admin",
   "phone": "+33600000099",

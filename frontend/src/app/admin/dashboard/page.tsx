@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-transparent p-8 space-y-8 font-sans">
 
       {/* 5 Stats Cards - Top Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
         {topCards.map((card, index) => (
           <div
             key={index}
@@ -112,15 +112,15 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Middle Row - Proportional Widths */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Recent Requests (40%) */}
-        <div className="w-full lg:w-[40%] bg-white border border-gray-100 shadow-sm p-8">
+      {/* Middle Row - Proportional Widths ALIGNED with Top Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Recent Requests (Matches 2/5 top cards = 40%) */}
+        <div className="lg:col-span-2 bg-white border border-gray-100 shadow-sm p-8 flex flex-col">
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-50">
             <h2 className="text-xs font-black uppercase tracking-[0.3em] text-[#321B13]">Dernières Demandes</h2>
             <Link href="/admin/requests" className="text-[9px] font-bold text-[#BC9C6C] hover:underline uppercase tracking-widest">Voir tout</Link>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-6 h-[380px] overflow-y-auto pr-2 custom-scrollbar">
             {activity?.recentRequests.map((req, i) => (
               <div key={i} className="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors group border-b border-gray-50 last:border-0">
                 <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-none group-hover:bg-[#BC9C6C]/10">
@@ -145,13 +145,13 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Users (40%) */}
-        <div className="w-full lg:w-[40%] bg-white border border-gray-100 shadow-sm p-8">
+        {/* Recent Users (Matches 2/5 top cards = 40%) */}
+        <div className="lg:col-span-2 bg-white border border-gray-100 shadow-sm p-8 flex flex-col">
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-50">
             <h2 className="text-xs font-black uppercase tracking-[0.3em] text-[#321B13]">Nouveaux Inscrits</h2>
             <Link href="/admin/users" className="text-[9px] font-bold text-[#BC9C6C] hover:underline uppercase tracking-widest">Gestion</Link>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-6 h-[380px] overflow-y-auto pr-2 custom-scrollbar">
             {activity?.recentUsers.map((u, i) => (
               <div key={i} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors group border-b border-gray-50 last:border-0">
                 <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-none group-hover:bg-[#BC9C6C]/10">
@@ -171,10 +171,10 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Status Breakdown (20%) */}
-        <div className="w-full lg:w-[20%] bg-white border border-gray-100 shadow-sm p-8 text-center flex flex-col items-center">
+        {/* Status Breakdown (Matches 1/5 top card = 20%) */}
+        <div className="lg:col-span-1 bg-white border border-gray-100 shadow-sm p-8 flex flex-col">
           <h2 className="text-xs font-black uppercase tracking-[0.3em] text-[#321B13] mb-8 pb-4 border-b border-gray-50 w-full text-left">Résumé</h2>
-          <div className="space-y-8 w-full">
+          <div className="space-y-10 w-full flex-1 flex flex-col justify-start pt-4">
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-end">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Terminées</p>
@@ -213,11 +213,6 @@ export default function AdminDashboardPage() {
                 ></div>
               </div>
             </div>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center mt-12 py-10 border-t border-gray-50 w-full">
-            <LayoutDashboard className="w-8 h-8 text-[#BC9C6C]/20 mx-auto mb-2" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-300">KPI Monitor</p>
           </div>
         </div>
       </div>

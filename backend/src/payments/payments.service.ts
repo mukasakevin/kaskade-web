@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -10,6 +11,8 @@ import { RequestStatus } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
@@ -44,9 +47,9 @@ export class PaymentsService {
       data: { status: RequestStatus.IN_PROGRESS },
     });
 
+    const deposit = request.price ? request.price * 0.5 : 0;
+    this.logger.log(`Acompte de 50% confirmé pour la demande ${requestId} (Montant: ${deposit})`);
     this.eventEmitter.emit('payment.deposit_confirmed', { requestId });
-
-    const deposit = request.price ? request.price * 0.5 : null;
 
     return {
       message: 'Acompte de 50% confirmé. La mission est maintenant en cours.',
@@ -86,9 +89,9 @@ export class PaymentsService {
       data: { status: RequestStatus.COMPLETED },
     });
 
+    const finalAmount = request.price ? request.price * 0.5 : 0;
+    this.logger.log(`Paiement final confirmé pour la demande ${requestId} (Montant: ${finalAmount}, Total: ${request.price})`);
     this.eventEmitter.emit('payment.final_confirmed', { requestId });
-
-    const finalAmount = request.price ? request.price * 0.5 : null;
 
     return {
       message: 'Paiement final de 50% confirmé. La mission est officiellement clôturée.',

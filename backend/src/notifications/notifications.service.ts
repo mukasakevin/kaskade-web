@@ -1,22 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   // Création interne depuis d'autres modules ou listeners
   async createNotification(data: { userId: string; title: string; message: string; type: string }) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data,
     });
+    this.logger.log(`Notification créée pour l'utilisateur ${data.userId}: ${data.title}`);
+    return notification;
   }
 
   // Création massive (utile pour envoyer à un groupe de prestataires)
   async createManyNotifications(data: { userId: string; title: string; message: string; type: string }[]) {
-    return this.prisma.notification.createMany({
+    const count = data.length;
+    const result = await this.prisma.notification.createMany({
       data,
     });
+    this.logger.log(`${count} notifications créées en masse.`);
+    return result;
   }
 
   // Lister les notifications d'un utilisateur

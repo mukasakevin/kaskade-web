@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
 import { AssignServicesDto } from './dto/assign-services.dto';
@@ -19,6 +20,8 @@ import { Role } from '@prisma/client';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminProvidersController {
+  private readonly logger = new Logger(AdminProvidersController.name);
+
   constructor(private readonly providersService: ProvidersService) {}
 
   // Lister toutes les candidatures
@@ -30,12 +33,14 @@ export class AdminProvidersController {
   // Approuver une candidature
   @Patch('applications/:id/approve')
   approve(@Param('id') id: string) {
+    this.logger.log(`ADMIN : Approbation de la candidature prestataire ID: ${id}`);
     return this.providersService.approve(id);
   }
 
   // Rejeter une candidature
   @Patch('applications/:id/reject')
   reject(@Param('id') id: string) {
+    this.logger.log(`ADMIN : Rejet de la candidature prestataire ID: ${id}`);
     return this.providersService.reject(id);
   }
 

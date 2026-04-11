@@ -49,6 +49,7 @@ export class ProvidersService {
       },
     });
 
+    this.logger.log(`Nouvelle candidature prestataire: ${user.email} (ID: ${userId})`);
     this.eventEmitter.emit('provider.applied', { userId });
 
     return application;
@@ -119,11 +120,12 @@ export class ProvidersService {
     });
 
     if (!user || user.role !== Role.PROVIDER) {
+      this.logger.warn(`Échec assignation services : Utilisateur ${providerId} n'est pas prestataire`);
       throw new BadRequestException('Cet utilisateur n\'existe pas ou n\'a pas le statut de PROVIDER.');
     }
 
     // Connecter les services (ajout sans supprimer les anciens)
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: providerId },
       data: {
         services: {
@@ -134,6 +136,9 @@ export class ProvidersService {
         services: true,
       },
     });
+
+    this.logger.log(`Services assignés au prestataire ${updatedUser.email} (ID: ${providerId}): ${assignServicesDto.serviceIds.join(', ')}`);
+    return updatedUser;
   }
 
   async findAllApplications() {
@@ -267,6 +272,7 @@ export class ProvidersService {
       })
     ]);
 
+    this.logger.log(`Mission ${requestId} acceptée par le prestataire ${provider.email} (ID: ${providerId})`);
     this.eventEmitter.emit('request.accepted', { requestId: updatedRequest.id, clientId: updatedRequest.clientId, providerId });
 
     return updatedRequest;
@@ -316,6 +322,7 @@ export class ProvidersService {
       })
     ]);
 
+    this.logger.log(`Mission ${requestId} marquée comme TERMINÉE par le prestataire (ID: ${providerId})`);
     this.eventEmitter.emit('request.completed', { requestId: updatedRequest.id, providerId });
 
     return updatedRequest;

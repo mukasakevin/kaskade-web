@@ -175,6 +175,24 @@ export class NotificationsListener {
   // ─── FIN DE MISSION ET PAIEMENT ─────────────────────────────────────────
   @OnEvent('payment.deposit_confirmed')
   async handlePaymentConfirmed(payload: { requestId: string }) {
+    const request = await this.prisma.request.findUnique({
+      where: { id: payload.requestId },
+      include: { provider: true }
+    });
+
+    if (!request) return;
+
+    // 1. Notifier le Prestataire qu'il peut commencer
+    if (request.providerId) {
+      await this.notificationsService.createNotification({
+        userId: request.providerId,
+        title: 'Acompte reçu - Mission active',
+        message: 'Le client a payé l\'acompte. Vous pouvez commencer la mission dès maintenant.',
+        type: 'PAYMENT_DEPOSIT_CONFIRMED',
+      });
+    }
+
+    // 2. Notifier les Admins
     const admins = await this.getAdmins();
     const notifications = admins.map((admin) => ({
       userId: admin.id,
@@ -187,12 +205,64 @@ export class NotificationsListener {
 
   @OnEvent('request.completed')
   async handleRequestCompleted(payload: { requestId: string; providerId: string }) {
+    const request = await this.prisma.request.findUnique({
+      where: { id: payload.requestId },
+    });
+
+    if (!request) return;
+
+    // 1. Notifier le Client qu'il doit payer le solde 50%
+    await this.notificationsService.createNotification({
+      userId: request.clientId,
+      title: 'Mission terminée - En attente du solde',
+      message: 'Le prestataire a terminé sa mission. Merci de procéder au paiement final de 50%.',
+      type: 'REQUEST_AWAITING_FINAL',
+    });
+
+    // 2. Notifier les Admins
     const admins = await this.getAdmins();
     const notifications = admins.map((admin) => ({
       userId: admin.id,
       title: 'Mission terminée',
       message: `Le prestataire (ID: ${payload.providerId}) a déclaré la demande terminée (ID: ${payload.requestId}).`,
       type: 'REQUEST_COMPLETED',
+    }));
+    await this.notificationsService.createManyNotifications(notifications);
+  }
+
+  @OnEvent('payment.final_confirmed')
+  async handleFinalPaymentConfirmed(payload: { requestId: string }) {
+    const request = await this.prisma.request.findUnique({
+      where: { id: payload.requestId },
+    });
+
+    if (!request) return;
+
+    // 1. Notifier le Client
+    await this.notificationsService.createNotification({
+      userId: request.clientId,
+      title: 'Paiement final confirmé',
+      message: 'Merci pour votre confiance. La mission est officiellement clôturée.',
+      type: 'PAYMENT_FINAL_CONFIRMED',
+    });
+
+    // 2. Notifier le Prestataire
+    if (request.providerId) {
+      await this.notificationsService.createNotification({
+        userId: request.providerId,
+        title: 'Solde reçu - Mission clôturée',
+        message: 'Le client a réglé le solde final pour votre mission.',
+        type: 'PAYMENT_FINAL_CONFIRMED',
+      });
+    }
+
+    // 3. Notifier les Admins
+    const admins = await this.getAdmins();
+    const notifications = admins.map((admin) => ({
+      userId: admin.id,
+      title: 'Mission Clôturée (Payée)',
+      message: `Le paiement final a été reçu pour la demande (ID: ${payload.requestId}).`,
+      type: 'PAYMENT_FINAL_CONFIRMED',
     }));
     await this.notificationsService.createManyNotifications(notifications);
   }

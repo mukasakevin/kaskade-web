@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards, Logger } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -9,6 +9,8 @@ import { Role } from '@prisma/client';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminRequestsController {
+  private readonly logger = new Logger(AdminRequestsController.name);
+
   constructor(private readonly requestsService: RequestsService) {}
 
   // Voir toutes les demandes de service
@@ -26,12 +28,14 @@ export class AdminRequestsController {
   // Approuver une demande (le prix est automatiquement lu depuis le Service)
   @Patch(':id/approve')
   approve(@Param('id') id: string) {
+    this.logger.log(`ADMIN : Approbation de la demande ID: ${id}`);
     return this.requestsService.approve(id);
   }
 
   // Rejeter une demande
   @Patch(':id/reject')
   reject(@Param('id') id: string) {
+    this.logger.log(`ADMIN : Rejet de la demande ID: ${id}`);
     return this.requestsService.reject(id);
   }
 }

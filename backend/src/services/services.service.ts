@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -10,6 +11,8 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Injectable()
 export class ServicesService {
+  private readonly logger = new Logger(ServicesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
@@ -25,6 +28,7 @@ export class ServicesService {
     });
 
     if (existing) {
+      this.logger.warn(`Tentative de création d'un service existant: ${createServiceDto.name} (${createServiceDto.category})`);
       throw new ConflictException(
         `Un service "${createServiceDto.name}" existe déjà dans la catégorie "${createServiceDto.category}".`,
       );
@@ -34,6 +38,7 @@ export class ServicesService {
       data: createServiceDto,
     });
 
+    this.logger.log(`Nouveau service catalogue créé: ${newService.name} (Catégorie: ${newService.category}, ID: ${newService.id})`);
     this.eventEmitter.emit('service.created', { serviceId: newService.id, serviceName: newService.name });
 
     return newService;
@@ -67,13 +72,16 @@ export class ServicesService {
       data: updateServiceDto,
     });
 
+    this.logger.log(`Service catalogue mis à jour: ${updatedService.name} (ID: ${id})`);
     this.eventEmitter.emit('service.updated', { serviceId: updatedService.id, serviceName: updatedService.name });
 
     return updatedService;
   }
 
   async remove(id: string) {
-    await this.findOne(id); // Vérifie que le service existe
-    return this.prisma.service.delete({ where: { id } });
+    const service = await this.findOne(id); // Vérifie que le service existe
+    const result = await this.prisma.service.delete({ where: { id } });
+    this.logger.log(`Service catalogue supprimÉ: ${service.name} (ID: ${id})`);
+    return result;
   }
 }

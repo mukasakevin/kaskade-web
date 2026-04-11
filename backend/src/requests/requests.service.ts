@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
@@ -12,6 +13,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class RequestsService {
+  private readonly logger = new Logger(RequestsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
@@ -31,9 +34,10 @@ export class RequestsService {
 
     const request = await this.prisma.request.create({
       data: { ...createRequestDto, clientId },
-      include: { service: true },
+      include: { service: true, client: true },
     });
 
+    this.logger.log(`Nouvelle demande de service créée par ${request.client.email}: ${request.service.name} (ID: ${request.id})`);
     this.eventEmitter.emit('request.created', { requestId: request.id, clientId });
 
     return request;
@@ -135,6 +139,7 @@ export class RequestsService {
       data: { status: RequestStatus.APPROVED, price },
     });
 
+    this.logger.log(`Demande ${id} APPROUVÉE par l'admin (Prix fixé: ${price})`);
     this.eventEmitter.emit('request.approved', { requestId: updatedRequest.id, serviceId: updatedRequest.serviceId });
 
     return updatedRequest;
@@ -147,35 +152,14 @@ export class RequestsService {
       throw new BadRequestException('Seules les demandes en attente peuvent être rejetées.');
     }
 
-    return this.prisma.request.update({
+    const updatedRequest = await this.prisma.request.update({
       where: { id },
       data: { status: RequestStatus.REJECTED },
     });
-  }
 
-  // ─── PAYMENTS (MOCK) ──────────────────────────────────────────────────────
-
-  async mockPaymentDeposit(id: string, clientId: string) {
-    const request = await this.findOneForClient(id, clientId);
-
-    if (request.status !== RequestStatus.ACCEPTED) {
-      throw new BadRequestException(
-        "Le paiement de l'acompte n'est possible que pour les demandes acceptées.",
-      );
-    }
-
-    const updatedRequest = await this.prisma.request.update({
-      where: { id },
-      data: { status: RequestStatus.IN_PROGRESS },
-      include: { service: true },
-    });
-
-    this.eventEmitter.emit('request.payment_deposit_received', {
-      requestId: updatedRequest.id,
-      clientId,
-    });
-
+    this.logger.log(`Demande ${id} REJETÉE par l'admin`);
     return updatedRequest;
   }
+
 }
 

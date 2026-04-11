@@ -38,11 +38,26 @@ export class AdminDashboardService {
 
     const totalRevenue = paidRequests.reduce((sum, req) => sum + (req.price || 0), 0);
 
+    // Additional "Important" Data
+    const topQuartier = await this.prisma.user.groupBy({
+      by: ['quartier'],
+      where: { quartier: { not: null } },
+      _count: { _all: true },
+      orderBy: { _count: { quartier: 'desc' } },
+      take: 1,
+    });
+
+    const usersWithRequests = await this.prisma.user.count({
+      where: { requests: { some: {} } },
+    });
+
     return {
       users: {
         total: totalUsers,
         clients: totalClients,
         providers: totalProviders,
+        conversionRate: totalUsers > 0 ? (usersWithRequests / totalUsers) * 100 : 0,
+        topQuartier: topQuartier[0]?.quartier || 'N/A',
       },
       requests: {
         total: totalRequests,
@@ -78,5 +93,33 @@ export class AdminDashboardService {
       recentRequests,
       recentUsers,
     };
+  }
+
+  async getUserGrowth() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: {
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const growthMap = new Map();
+    users.forEach((user) => {
+      const date = user.createdAt.toISOString().split('T')[0];
+      growthMap.set(date, (growthMap.get(date) || 0) + 1);
+    });
+
+    return Array.from(growthMap.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
   }
 }

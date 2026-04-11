@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
 import { UpdateProviderProfileDto } from './dto/update-provider-profile.dto';
@@ -18,6 +19,8 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.PROVIDER)
 export class ProviderController {
+  private readonly logger = new Logger(ProviderController.name);
+
   constructor(private readonly providersService: ProvidersService) {}
 
   // ─── DEMANDES / MISSIONS ──────────────────────────────────────────────────
@@ -32,6 +35,7 @@ export class ProviderController {
     @Param('id') requestId: string,
     @CurrentUser('id') providerId: string,
   ) {
+    this.logger.log(`PROVIDER : Mission ${requestId} acceptée par le prestataire ID: ${providerId}`);
     return this.providersService.acceptRequest(requestId, providerId);
   }
 
@@ -48,6 +52,7 @@ export class ProviderController {
     @Param('id') requestId: string,
     @CurrentUser('id') providerId: string,
   ) {
+    this.logger.log(`PROVIDER : Mission ${requestId} marquée comme TERMINÉE par le prestataire ID: ${providerId}`);
     return this.providersService.completeRequest(requestId, providerId);
   }
 
