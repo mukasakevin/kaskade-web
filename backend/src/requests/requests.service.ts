@@ -90,7 +90,12 @@ export class RequestsService {
       throw new BadRequestException('Seules les demandes en attente peuvent être annulées.');
     }
 
-    return this.prisma.request.delete({ where: { id } });
+    const result = await this.prisma.request.delete({ where: { id } });
+
+    this.logger.log(`Demande ${id} ANNULÉE par le client ${clientId}`);
+    this.eventEmitter.emit('request.cancelled', { requestId: id, clientId });
+
+    return result;
   }
 
   // ─── ADMIN ────────────────────────────────────────────────────────────────
@@ -158,6 +163,11 @@ export class RequestsService {
     });
 
     this.logger.log(`Demande ${id} REJETÉE par l'admin`);
+    this.eventEmitter.emit('request.admin_rejected', {
+      requestId: id,
+      clientId: request.clientId,
+    });
+
     return updatedRequest;
   }
 

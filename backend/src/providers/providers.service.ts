@@ -50,7 +50,7 @@ export class ProvidersService {
     });
 
     this.logger.log(`Nouvelle candidature prestataire: ${user.email} (ID: ${userId})`);
-    this.eventEmitter.emit('provider.applied', { userId });
+    this.eventEmitter.emit('provider.applied', { userId, applicationId: application.id });
 
     return application;
   }
@@ -83,7 +83,7 @@ export class ProvidersService {
     // Notification temporaire via logs (le client l'a explicitement demandé)
     this.logger.log(`[NOTIFICATION] L'utilisateur ${application.user.email} (ID: ${application.userId}) a été approuvé en tant que PROVIDER.`);
 
-    this.eventEmitter.emit('provider.application.resolved', { userId: application.userId, status: 'APPROVED' });
+    this.eventEmitter.emit('provider.application.resolved', { userId: application.userId, status: 'APPROVED', applicationId: updatedApp.id });
 
     return updatedApp;
   }
@@ -109,7 +109,7 @@ export class ProvidersService {
     // Notification temporaire via logs
     this.logger.log(`[NOTIFICATION] La candidature de ${application.user.email} a été REJETÉE.`);
 
-    this.eventEmitter.emit('provider.application.resolved', { userId: application.userId, status: 'REJECTED' });
+    this.eventEmitter.emit('provider.application.resolved', { userId: application.userId, status: 'REJECTED', applicationId: updatedApp.id });
 
     return updatedApp;
   }

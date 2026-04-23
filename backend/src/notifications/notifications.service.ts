@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationType } from './notification-type.enum';
 
 interface CreateNotificationPayload {
   userId: string;
   title: string;
   message: string;
-  type: string;
+  type: NotificationType;
   requestId?: string;
   serviceId?: string;
   providerAppId?: string;
@@ -52,17 +53,42 @@ export class NotificationsService {
     return result;
   }
 
-  // Lister les notifications d'un utilisateur avec relations
-  async findAllForUser(userId: string) {
-    return this.prisma.notification.findMany({
-      where: { userId },
-      include: {
-        request: true,
-        service: true,
-        providerApp: true,
-      },
-      orderBy: { createdAt: 'desc' },
+  // Lister les notifications d'un utilisateur avec relations et pagination
+  async findAllForUser(userId: string, options?: { page: number; limit: number }) {
+    const page = options?.page || 1;
+    const limit = options?.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: { userId },
+        include: {
+          request: true,
+          service: true,
+          providerApp: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where: { userId } }),
+    ]);
+
+    return {
+      data: notifications,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  // Compteur de notifications non lues
+  async getUnreadCount(userId: string) {
+    const count = await this.prisma.notification.count({
+      where: { userId, isRead: false },
     });
+    return { unreadCount: count };
   }
 
   // Marquer une notification comme lue
@@ -91,5 +117,23 @@ export class NotificationsService {
       where: { userId, isRead: false },
       data: { isRead: true },
     });
+  }
+
+  // Supprimer une notification
+  async deleteNotification(notificationId: string, userId: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Notification introuvable');
+    }
+
+    if (notification.userId !== userId) {
+      throw new NotFoundException('Notification non autorisée');
+    }
+
+    await this.prisma.notification.delete({ where: { id: notificationId } });
+    return { message: 'Notification supprimée' };
   }
 }

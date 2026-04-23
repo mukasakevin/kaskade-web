@@ -151,7 +151,6 @@ model Notification {
   requestId         String?   // Pour demandes de service (REQUEST_*)
   serviceId         String?   // Pour services (SERVICE_*)
   providerAppId     String?   // Pour candidatures prestataire (PROVIDER_*)
-  relatedUserId     String?   // Pour notifications concernant un utilisateur
   
   createdAt DateTime @default(now())
 

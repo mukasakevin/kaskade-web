@@ -143,6 +143,7 @@ export class ServicesService {
     const service = await this.findOne(id); // Vérifie que le service existe
     const result = await this.prisma.service.delete({ where: { id } });
     this.logger.log(`Service catalogue supprimé: ${service.name} (ID: ${id})`);
+    this.eventEmitter.emit('service.deleted', { serviceId: id, serviceName: service.name });
     return this.formatServiceResponse(result);
   }
 }
