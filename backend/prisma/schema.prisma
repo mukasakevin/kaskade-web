@@ -46,17 +46,18 @@ model User {
 // Catalogue de services gérés par l'admin
 model Service {
   id          String    @id @default(uuid())
-  name        String    // Ex: "Réparation électrique", "Nettoyage maison"
-  category    String    // Ex: "ÉLECTRICITÉ", "MÉNAGE"
+  name        String    
+  category    String    
   description String?   @db.Text
-  price       Float     // Prix de base du service (fixé par l'Admin)
+  price       Float     
   isActive    Boolean   @default(true)
 
-  // Relation vers les demandes
+  imageKey    String?   
+
+  // relations
   requests    Request[]
-  
-  // Relation Many-to-Many vers les prestataires
   providers   User[]
+  notifications Notification[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -87,6 +88,7 @@ model Request {
   client      User          @relation("ClientRequests", fields: [clientId], references: [id])
   provider    User?         @relation("ProviderRequests", fields: [providerId], references: [id])
   service     Service       @relation(fields: [serviceId], references: [id])
+  notifications Notification[]
 
   @@index([clientId])
   @@index([serviceId])
@@ -102,7 +104,9 @@ model ProviderApplication {
   user        User          @relation(fields: [userId], references: [id])
   
   motivation  String        @db.Text
-  status      RequestStatus @default(PENDING) // On utilise le même enum pour PENDING, APPROVED, REJECTED
+  status      RequestStatus @default(PENDING) 
+  
+  notifications Notification[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -142,11 +146,24 @@ model Notification {
   message   String   @db.Text
   type      String   // Ex: AUTH_WELCOME, PROVIDER_APPLY, REQUEST_CREATED...
   isRead    Boolean  @default(false)
+  
+  // Relations optionnelles vers les ressources
+  requestId         String?   // Pour demandes de service (REQUEST_*)
+  serviceId         String?   // Pour services (SERVICE_*)
+  providerAppId     String?   // Pour candidatures prestataire (PROVIDER_*)
+  relatedUserId     String?   // Pour notifications concernant un utilisateur
+  
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  request           Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  service           Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  providerApp       ProviderApplication? @relation(fields: [providerAppId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([isRead])
+  @@index([requestId])
+  @@index([serviceId])
+  @@index([providerAppId])
 }
 

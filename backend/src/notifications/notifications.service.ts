@@ -1,35 +1,66 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface CreateNotificationPayload {
+  userId: string;
+  title: string;
+  message: string;
+  type: string;
+  requestId?: string;
+  serviceId?: string;
+  providerAppId?: string;
+}
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  // Création interne depuis d'autres modules ou listeners
-  async createNotification(data: { userId: string; title: string; message: string; type: string }) {
+  // Création avec support des relations vers ressources
+  async createNotification(data: CreateNotificationPayload) {
     const notification = await this.prisma.notification.create({
-      data,
+      data: {
+        userId: data.userId,
+        title: data.title,
+        message: data.message,
+        type: data.type,
+        requestId: data.requestId,
+        serviceId: data.serviceId,
+        providerAppId: data.providerAppId,
+      },
     });
-    this.logger.log(`Notification créée pour l'utilisateur ${data.userId}: ${data.title}`);
+    this.logger.log(`Notification créée pour l'utilisateur ${data.userId}: ${data.title} (${data.type})`);
     return notification;
   }
 
-  // Création massive (utile pour envoyer à un groupe de prestataires)
-  async createManyNotifications(data: { userId: string; title: string; message: string; type: string }[]) {
+  // Création massive avec support des relations
+  async createManyNotifications(data: CreateNotificationPayload[]) {
     const count = data.length;
     const result = await this.prisma.notification.createMany({
-      data,
+      data: data.map(d => ({
+        userId: d.userId,
+        title: d.title,
+        message: d.message,
+        type: d.type,
+        requestId: d.requestId,
+        serviceId: d.serviceId,
+        providerAppId: d.providerAppId,
+      })),
     });
     this.logger.log(`${count} notifications créées en masse.`);
     return result;
   }
 
-  // Lister les notifications d'un utilisateur
+  // Lister les notifications d'un utilisateur avec relations
   async findAllForUser(userId: string) {
     return this.prisma.notification.findMany({
       where: { userId },
+      include: {
+        request: true,
+        service: true,
+        providerApp: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

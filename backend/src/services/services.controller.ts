@@ -10,7 +10,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
-import { CreateServiceDto } from './dto/create-service.dto';
+import { CreateServiceDto, ServiceResponseDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -26,12 +26,12 @@ export class ServicesController {
 
   // Catalogue visible par tous les utilisateurs connectés (actifs uniquement)
   @Get()
-  findAllActive() {
+  async findAllActive(): Promise<ServiceResponseDto[]> {
     return this.servicesService.findAllActive();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<ServiceResponseDto> {
     return this.servicesService.findOne(id);
   }
 }
@@ -47,27 +47,27 @@ export class AdminServicesController {
 
   // Créer un service
   @Post()
-  create(@Body() createServiceDto: CreateServiceDto) {
+  async create(@Body() createServiceDto: CreateServiceDto): Promise<ServiceResponseDto> {
     this.logger.log(`ADMIN : Création d'un nouveau service catalogue: ${createServiceDto.name}`);
     return this.servicesService.create(createServiceDto);
   }
 
   // Lister TOUS les services (actifs + inactifs)
   @Get()
-  findAll() {
+  async findAll(): Promise<ServiceResponseDto[]> {
     return this.servicesService.findAll();
   }
 
   // Modifier un service
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
+  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto): Promise<ServiceResponseDto> {
     this.logger.log(`ADMIN : Modification du service catalogue ID: ${id}`);
     return this.servicesService.update(id, updateServiceDto);
   }
 
   // Supprimer un service
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<ServiceResponseDto> {
     this.logger.log(`ADMIN : Suppression du service catalogue ID: ${id}`);
     return this.servicesService.remove(id);
   }
